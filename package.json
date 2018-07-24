@@ -1,25 +1,43 @@
 {
-  "name": "entrepot",
-  "author": "Filip Dabrowski",
-  "repository": "https://github.com/thefill/entrepot",
-  "license": "MIT",
-  "version": "0.0.1",
-  "dependencies": {
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1",
-    "react-scripts-ts": "2.16.0"
-  },
-  "scripts": {
-    "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
-    "test": "react-scripts-ts test --env=jsdom",
-    "eject": "react-scripts-ts eject"
-  },
-  "devDependencies": {
-    "@types/jest": "^23.3.0",
-    "@types/node": "^10.5.2",
-    "@types/react": "^16.4.6",
-    "@types/react-dom": "^16.0.6",
-    "typescript": "^2.9.2"
-  }
+    "name": "entrepot",
+    "author": "Filip Dabrowski",
+    "repository": "https://github.com/thefill/entrepot",
+    "license": "MIT",
+    "version": "0.0.1",
+    "dependencies": {},
+    "scripts": {
+        "tsc": "tsc",
+        "start": "tsc start",
+        "build": "react-scripts-ts build",
+        "watch": "react-scripts-ts build"
+        "Core scripts": "-------------------------------------------------------",
+        "build": "npm run clean && tsc -p tsconfig.prod.json",
+        "lint": "tslint --project .",
+        "test": "npm run test-unit && npm run test-e2e",
+        "test-unit": "jasmine-ts --config=jasmine.unit.json",
+        "test-e2e": "jasmine-ts --config=jasmine.e2e.json",
+        "build-lint-test": "npm run build && npm run lint && npm run test",
+        "git-add": "git add .",
+        "precommit": "npm run build-lint-test && npm run git-add",
+        "prepush": "npm run lint && npm run test",
+        "clean": "rimraf dist",
+        "Example scripts": "-------------------------------------------------------",
+        "build-example": "npm run clean && tsc -p tsconfig.example.json",
+        "start-example": "node dist/example/cloud-function.server.js",
+        "debug-example": "node --inspect --debug-brk dist/example/cloud-function.server.js",
+        "watch-example": "nodemon --watch example -e ts --ignore 'example/**/*.spec.ts' --exec \"npm run build-example && npm run start-example\""
+    },
+    "devDependencies": {
+        "@types/jasmine": "^2.8.8",
+        "@types/node": "^6.0.0",
+        "body-parser": "^1.18.3",
+        "husky": "^0.14.3",
+        "jasmine": "^3.1.0",
+        "jasmine-core": "^3.1.0",
+        "jasmine-ts": "^0.2.1",
+        "nodemon": "^1.12.1",
+        "rimraf": "^2.6.2",
+        "tslint": "^5.9.1",
+        "typescript": "2.6.2"
+    }
 }
