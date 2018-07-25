@@ -1,24 +1,27 @@
-import {IStoreEntryConfig} from "./index";
+import { IStoreEntryConfig } from "./store.interface";
 
 /**
  * Represents key for the store entry
  */
-export class StoreEntryKey {
+export class StoreEntryKeyClass {
     // Entry namespace key
     public namespace: string;
     // Entry key
     public key: string;
 
-    constructor(key: string | IStoreEntryConfig | StoreEntryKey) {
-
+    /**
+     * Create key
+     * @param {string | IStoreEntryConfig | StoreEntryKeyClass} key
+     */
+    constructor(key: string | IStoreEntryConfig | StoreEntryKeyClass) {
         // if key object passed - don't create again
-        if (key instanceof StoreEntryKey) {
+        if (key instanceof StoreEntryKeyClass) {
             Object.assign(this, key);
             return;
         }
 
         // if not key config
-        if (typeof key === 'string') {
+        if (typeof key === "string") {
             this.key = key;
             return;
         } else if (key.key) {

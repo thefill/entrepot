@@ -1,9 +1,10 @@
 {
-  "extends": ["tslint:recommended", "tslint-config-prettier"],
-  "linterOptions": {
-    "exclude": [
-      "config/**/*.js",
-      "node_modules/**/*.ts"
-    ]
-  }
+    "extends": ["tslint:recommended"],
+    "linterOptions": {
+        "exclude": ["config/**/*.js", "node_modules/**/*.ts"]
+    },
+    "rules": {
+        "trailing-comma": false,
+        "quotemark": false
+    }
 }

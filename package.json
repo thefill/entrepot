@@ -4,29 +4,22 @@
     "repository": "https://github.com/thefill/entrepot",
     "license": "MIT",
     "version": "0.0.1",
-    "dependencies": {},
+    "main": "dist/index.js",
     "scripts": {
-        "tsc": "tsc",
-        "start": "tsc start",
-        "build": "react-scripts-ts build",
-        "watch": "react-scripts-ts build"
-        "Core scripts": "-------------------------------------------------------",
-        "build": "npm run clean && tsc -p tsconfig.prod.json",
+        "start": "npm run build && serve dist/demo",
+        "build": "npm run clean && tsc -p tsconfig.prod.json && cp src/demo/index.html dist/demo/index.html",
         "lint": "tslint --project .",
-        "test": "npm run test-unit && npm run test-e2e",
-        "test-unit": "jasmine-ts --config=jasmine.unit.json",
-        "test-e2e": "jasmine-ts --config=jasmine.e2e.json",
+        "test": "jasmine-ts --config=jasmine.json",
+        "docs": "typedoc --mode modules --exclude \"**/*+(index|.spec|.e2e).ts\" --tsconfig tsconfig.prod.json --hideGenerator --readme README.md --out docs src",
         "build-lint-test": "npm run build && npm run lint && npm run test",
         "git-add": "git add .",
-        "precommit": "npm run build-lint-test && npm run git-add",
+        "precommit": "npm run build-lint-test && npm run docs && npm run git-add",
         "prepush": "npm run lint && npm run test",
-        "clean": "rimraf dist",
-        "Example scripts": "-------------------------------------------------------",
-        "build-example": "npm run clean && tsc -p tsconfig.example.json",
-        "start-example": "node dist/example/cloud-function.server.js",
+        "clean": "rimraf dist && rimraf docs",
         "debug-example": "node --inspect --debug-brk dist/example/cloud-function.server.js",
-        "watch-example": "nodemon --watch example -e ts --ignore 'example/**/*.spec.ts' --exec \"npm run build-example && npm run start-example\""
+        "watch": "nodemon --config nodemon.json"
     },
+    "dependencies": {},
     "devDependencies": {
         "@types/jasmine": "^2.8.8",
         "@types/node": "^6.0.0",
@@ -37,7 +30,11 @@
         "jasmine-ts": "^0.2.1",
         "nodemon": "^1.12.1",
         "rimraf": "^2.6.2",
+        "serve": "^9.4.0",
+        "stylelint": "^9.4.0",
+        "stylelint-config-recommended": "^2.1.0",
         "tslint": "^5.9.1",
-        "typescript": "2.6.2"
+        "typedoc": "^0.11.1",
+        "typescript": "^2.9.2"
     }
 }
