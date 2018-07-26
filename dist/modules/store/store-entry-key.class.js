@@ -1,14 +1,12 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Represents key for the store entry
  */
-var StoreEntryKeyClass = /** @class */ (function () {
+export class StoreEntryKeyClass {
     /**
      * Create key
      * @param {string | IStoreEntryConfig | StoreEntryKeyClass} key
      */
-    function StoreEntryKeyClass(key) {
+    constructor(key) {
         // if key object passed - don't create again
         if (key instanceof StoreEntryKeyClass) {
             Object.assign(this, key);
@@ -26,7 +24,5 @@ var StoreEntryKeyClass = /** @class */ (function () {
             }
         }
     }
-    return StoreEntryKeyClass;
-}());
-exports.StoreEntryKeyClass = StoreEntryKeyClass;
+}
 //# sourceMappingURL=store-entry-key.class.js.map

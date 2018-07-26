@@ -5,6 +5,7 @@
     },
     "rules": {
         "trailing-comma": false,
-        "quotemark": false
+        "quotemark": false,
+        "no-trailing-whitespace": false
     }
 }

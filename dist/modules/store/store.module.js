@@ -1,11 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var store_entry_key_class_1 = require("./store-entry-key.class");
+import { StoreEntryKeyClass } from "./store-entry-key.class";
 /**
  * Main store class
  */
-var Store = /** @class */ (function () {
-    function Store() {
+export class Store {
+    constructor() {
         // TODO: get history list
         // TODO: get history length
         // TODO: get history list with values
@@ -27,7 +25,7 @@ var Store = /** @class */ (function () {
      * @param {any} value
      * @return {any}
      */
-    Store.decoupleValue = function (value) {
+    static decoupleValue(value) {
         if (!value) {
             return value;
         }
@@ -38,41 +36,41 @@ var Store = /** @class */ (function () {
             return Object.assign({}, value);
         }
         return value;
-    };
+    }
     /**
      * Set single result
      * @param {string | IStoreEntryConfig} key
      * @param {any} value
      * @return {StoreEntryKeyClass}
      */
-    Store.prototype.set = function (key, value) {
-        var keyObject = new store_entry_key_class_1.StoreEntryKeyClass(key);
+    set(key, value) {
+        const keyObject = new StoreEntryKeyClass(key);
         if (!keyObject.key) {
             return;
         }
         value = Store.decoupleValue(value);
         this.setOrUpdate(keyObject, value);
         return this.setOrUpdate(keyObject, value) ? keyObject : undefined;
-    };
-    Store.prototype.entryExists = function (key) {
+    }
+    entryExists(key) {
         if (key.namespace) {
             return !!(this.store[key.namespace] && this.store[key.key]);
         }
         else {
             return !!this.store[key.key];
         }
-    };
+    }
     /**
      * Get
      * @param {string | IStoreEntryConfig | StoreEntryKeyClass} key
      * @returns {IStoreEntry | {[p: string]: IStoreEntry}}
      */
-    Store.prototype.get = function (key) {
+    get(key) {
         if (!key) {
             return;
         }
-        var keyValue;
-        var namespaceValue;
+        let keyValue;
+        let namespaceValue;
         if (typeof key === "string") {
             keyValue = key;
         }
@@ -86,27 +84,24 @@ var Store = /** @class */ (function () {
         return namespaceValue
             ? this.store[namespaceValue][keyValue]
             : this.store[keyValue];
-    };
+    }
     /**
      * Set or update value in store
      * @param {StoreEntryKeyClass} key
      * @param {any} value
      * @return {boolean}
      */
-    Store.prototype.setOrUpdate = function (key, value) {
-        var _a;
+    setOrUpdate(key, value) {
         if (!this.entryExists(key)) {
             return false;
         }
         if (key.namespace) {
-            this.store[key.namespace] = (_a = {}, _a[key.key] = value, _a);
+            this.store[key.namespace] = { [key.key]: value };
         }
         else {
             this.store[key.key] = value;
         }
         return true;
-    };
-    return Store;
-}());
-exports.Store = Store;
+    }
+}
 //# sourceMappingURL=store.module.js.map

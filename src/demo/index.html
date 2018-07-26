@@ -4,10 +4,67 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
     <script src="index.js"></script>
     <title>Document</title>
 </head>
 <body>
-test
+    <div class="container" id="app-root">
+        <h1>Store test</h1>
+        <hr>
+        <section>
+            <h2>Set values</h2>
+            <div class="row">
+                <div class="six columns">
+                    <label for="set-key">Set key</label>
+                    <input class="u-full-width" type="text" id="set-key">
+                </div>
+                <div class="six columns">
+                    <label for="set-namespace">Set namespace</label>
+                    <input class="u-full-width" type="text" id="set-namespace" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="twelve columns">
+                    <label for="set-value">Set value</label>
+                    <textarea class="u-full-width" placeholder="Provide value" id="set-value" required></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="twelve columns">
+                    <button class="button-primary" id="set-value-button">Set values</button>
+                </div>
+            </div>
+        </section>
+        <hr>
+        <section>
+            <h2>Retrieve values</h2>
+            <div class="row">
+                <div class="six columns">
+                    <div>
+                        <label for="get-namespace">Get namespace</label>
+                        <input class="u-full-width" type="text" id="get-namespace">
+                    </div>
+                    <div>
+                        <label for="get-key">Get key</label>
+                        <input class="u-full-width" type="text" id="get-key" required>
+                    </div>
+                    <button class="button-primary" id="get-value-button">Get values</button>
+                </div>
+                <div class="six columns">
+                <pre>
+                    <code id="get-value"></code>
+                </pre>
+                </div>
+            </div>
+        </section>
+        <hr>
+        <section>
+            <h2>Store snapshot</h2>
+            <pre>
+                <code id="store-snapshot"></code>
+            </pre>
+        </section>
+    </div>
 </body>
 </html>
