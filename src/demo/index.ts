@@ -8,6 +8,7 @@ class DemoModule {
     protected getKeyInput: HTMLInputElement;
     protected getNamespaceInput: HTMLInputElement;
     protected getValuePlaceholder: HTMLElement;
+    protected getHistoryPlaceholder: HTMLElement;
     protected storeSnapshot: HTMLElement;
     protected getValueButton: HTMLButtonElement;
     protected setValueButton: HTMLButtonElement;
@@ -28,41 +29,44 @@ class DemoModule {
     protected setupNodes(rootSelector: string) {
         this.root = document.querySelector(rootSelector) as HTMLDivElement;
         this.setKeyInput = this.root.querySelector(
-            "set-key"
+            "#set-key"
         ) as HTMLInputElement;
         this.setNamespaceInput = this.root.querySelector(
-            "set-namespace"
+            "#set-namespace"
         ) as HTMLInputElement;
         this.setValueInput = this.root.querySelector(
-            "set-value"
+            "#set-value"
         ) as HTMLInputElement;
         this.getKeyInput = this.root.querySelector(
-            "set-key"
+            "#get-key"
         ) as HTMLInputElement;
         this.getNamespaceInput = this.root.querySelector(
-            "set-namespace"
+            "#get-namespace"
         ) as HTMLInputElement;
         this.getValuePlaceholder = this.root.querySelector(
-            "get-value"
+            "#get-value"
+        ) as HTMLElement;
+        this.getHistoryPlaceholder = this.root.querySelector(
+            "#get-history"
         ) as HTMLElement;
         this.storeSnapshot = this.root.querySelector(
-            "store-snapshot"
+            "#store-snapshot"
         ) as HTMLElement;
         this.getValueButton = this.root.querySelector(
-            "get-value-button"
+            "#get-value-button"
         ) as HTMLButtonElement;
         this.setValueButton = this.root.querySelector(
-            "set-value-button"
+            "#set-value-button"
         ) as HTMLButtonElement;
     }
 
     protected setupEvents() {
-        this.setValueButton.addEventListener("click", this.onSet);
-        this.getValueButton.addEventListener("click", this.onGet);
+        this.setValueButton.addEventListener("click", this.onSet.bind(this));
+        this.getValueButton.addEventListener("click", this.onGet.bind(this));
     }
 
     protected onSet() {
-        if (!this.setKeyInput.validity || this.setValueInput.validity) {
+        if (!this.setKeyInput.validity.valid || !this.setValueInput.validity.valid) {
             return;
         }
 
@@ -83,6 +87,7 @@ class DemoModule {
         }
 
         this.updateStoreSnapshot();
+        this.clearSet();
     }
 
     protected clearSet() {
@@ -92,7 +97,7 @@ class DemoModule {
     }
 
     protected onGet() {
-        if (!this.getKeyInput.validity) {
+        if (!this.getKeyInput.validity.valid) {
             return;
         }
 
@@ -110,6 +115,7 @@ class DemoModule {
         }
 
         this.getValuePlaceholder.innerHTML = value;
+        this.getHistoryPlaceholder.innerHTML = '<strong>Gay</strong>';
     }
 
     protected updateStoreSnapshot() {
@@ -117,5 +123,5 @@ class DemoModule {
     }
 }
 
-const demo = new DemoModule("app-root");
+const demo = new DemoModule("#app-root");
 demo.init();

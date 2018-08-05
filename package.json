@@ -7,7 +7,7 @@
     "main": "dist/index.js",
     "scripts": {
         "start": "npm run build && serve dist/demo",
-        "build": "npm run clean && tsc -p tsconfig.prod.json && cp src/demo/index.html dist/demo/index.html",
+        "build": "npm run clean && tsc -p tsconfig.prod.json && cp src/demo/index.html dist/demo/index.html && webpack --config webpack-demo.config.js",
         "lint": "tslint --project .",
         "test": "jasmine-ts --config=jasmine.json",
         "docs": "typedoc --mode modules --exclude \"**/*+(index|.spec|.e2e).ts\" --tsconfig tsconfig.prod.json --hideGenerator --readme README.md --out docs src",
@@ -16,26 +16,30 @@
         "precommit": "npm run build-lint-test && npm run docs && npm run git-add",
         "prepush": "npm run lint && npm run test",
         "clean": "rimraf dist && rimraf docs",
-        "debug-example": "node --inspect --debug-brk dist/example/cloud-function.server.js",
         "watch": "nodemon --config nodemon.json"
     },
     "dependencies": {},
     "devDependencies": {
         "@types/jasmine": "^2.8.8",
         "@types/node": "^6.0.0",
+        "babel-core": "^6.26.3",
+        "babel-jest": "^23.4.2",
         "body-parser": "^1.18.3",
         "husky": "^0.14.3",
         "jasmine": "^3.1.0",
         "jasmine-core": "^3.1.0",
         "jasmine-ts": "^0.2.1",
+        "jest": "^23.4.2",
         "nodemon": "^1.12.1",
         "rimraf": "^2.6.2",
         "serve": "^9.4.0",
         "stylelint": "^9.4.0",
         "stylelint-config-recommended": "^2.1.0",
+        "ts-jest": "^23.1.2",
         "tslint": "^5.9.1",
         "typedoc": "^0.11.1",
         "typescript": "^2.9.2",
-        "webpack": "^4.16.2"
+        "webpack": "^4.16.2",
+        "webpack-cli": "^3.1.0"
     }
 }
