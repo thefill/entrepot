@@ -4,8 +4,12 @@
         "exclude": ["config/**/*.js", "node_modules/**/*.ts"]
     },
     "rules": {
-        "trailing-comma": false,
         "quotemark": false,
-        "no-trailing-whitespace": false
+        "trailing-comma": false,
+        "ordered-imports": false,
+        "no-trailing-whitespace": false,
+        "object-literal-sort-keys": false,
+        "object-literal-shorthand": false,
+        "one-line": false
     }
 }

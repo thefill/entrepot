@@ -1,6 +1,36 @@
-import { Store } from "../modules/store/store.module";
+import {Store} from "../modules";
 
 class DemoModule {
+
+    /**
+     * Convert stringified json to colorful html
+     * @param {string} json
+     * @returns {string}
+     */
+    protected static syntaxHighlight(json: string): string{
+        json = json.replace(/&/g, '&amp;')
+                   .replace(/</g, '&lt;')
+                   .replace(/>/g, '&gt;');
+        return json.replace(
+            /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+            (match) => {
+                let cls = 'number';
+                if (/^"/.test(match)){
+                    if (/:$/.test(match)){
+                        cls = 'key';
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)){
+                    cls = 'boolean';
+                } else if (/null/.test(match)){
+                    cls = 'null';
+                }
+                return `<span class="${cls}">${match}</span>`;
+            }
+        );
+    }
+
     protected root: HTMLDivElement;
     protected setKeyInput: HTMLInputElement;
     protected setNamespaceInput: HTMLInputElement;
@@ -16,17 +46,17 @@ class DemoModule {
     protected store: Store;
     protected rootSelector: string;
 
-    constructor(rootSelector: string) {
+    constructor(rootSelector: string){
         this.rootSelector = rootSelector;
         this.store = new Store();
     }
 
-    public init() {
+    public init(){
         this.setupNodes(this.rootSelector);
         this.setupEvents();
     }
 
-    protected setupNodes(rootSelector: string) {
+    protected setupNodes(rootSelector: string){
         this.root = document.querySelector(rootSelector) as HTMLDivElement;
         this.setKeyInput = this.root.querySelector(
             "#set-key"
@@ -60,13 +90,13 @@ class DemoModule {
         ) as HTMLButtonElement;
     }
 
-    protected setupEvents() {
+    protected setupEvents(){
         this.setValueButton.addEventListener("click", this.onSet.bind(this));
         this.getValueButton.addEventListener("click", this.onGet.bind(this));
     }
 
-    protected onSet() {
-        if (!this.setKeyInput.validity.valid || !this.setValueInput.validity.valid) {
+    protected onSet(){
+        if (!this.setKeyInput.validity.valid || !this.setValueInput.validity.valid){
             return;
         }
 
@@ -74,7 +104,7 @@ class DemoModule {
         const key = this.setKeyInput.value;
         const value = this.setValueInput.value;
 
-        if (namespace) {
+        if (namespace){
             this.store.set(
                 {
                     key,
@@ -90,14 +120,14 @@ class DemoModule {
         this.clearSet();
     }
 
-    protected clearSet() {
+    protected clearSet(){
         this.setNamespaceInput.value = "";
         this.setKeyInput.value = "";
         this.setValueInput.value = "";
     }
 
-    protected onGet() {
-        if (!this.getKeyInput.validity.valid) {
+    protected onGet(){
+        if (!this.getKeyInput.validity.valid){
             return;
         }
 
@@ -105,7 +135,7 @@ class DemoModule {
         const key = this.getKeyInput.value;
 
         let value;
-        if (namespace) {
+        if (namespace){
             value = this.store.get({
                 key,
                 namespace
@@ -115,11 +145,12 @@ class DemoModule {
         }
 
         this.getValuePlaceholder.innerHTML = value;
-        this.getHistoryPlaceholder.innerHTML = '<strong>Gay</strong>';
+        this.getHistoryPlaceholder.innerHTML = '<strong>Donkey</strong>';
     }
 
-    protected updateStoreSnapshot() {
-        this.storeSnapshot.innerHTML = JSON.stringify(this.store);
+    protected updateStoreSnapshot(){
+        const snapshot = JSON.stringify(this.store, undefined, 4);
+        this.storeSnapshot.innerHTML = DemoModule.syntaxHighlight(snapshot);
     }
 }
 

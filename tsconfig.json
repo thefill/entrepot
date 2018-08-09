@@ -1,22 +1,21 @@
 {
     "compilerOptions": {
-        "baseUrl": ".",
-        "outDir": "dist",
+        "module": "es2015",
+        "typeRoots": ["../node_modules/@types"],
         "target": "es5",
-        "lib": ["es6", "dom"],
         "sourceMap": true,
         "declaration": true,
-        "declarationDir": "dist",
+        "removeComments": true,
+        "preserveConstEnums": true,
         "moduleResolution": "node",
-        "rootDir": "src",
-        "forceConsistentCasingInFileNames": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
-        "noImplicitAny": true,
+        "lib": [
+            "dom",
+            "es5",
+            "es6",
+            "es7"
+        ],
         "strictNullChecks": true,
-        "suppressImplicitAnyIndexErrors": true,
-        "noUnusedLocals": true
+        "noFallthroughCasesInSwitch": true
     },
-    "exclude": ["node_modules"],
-    "include": ["src"]
+    "compileOnSave": false
 }

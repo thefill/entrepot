@@ -1,45 +1,67 @@
 {
     "name": "entrepot",
-    "author": "Filip Dabrowski",
-    "repository": "https://github.com/thefill/entrepot",
-    "license": "MIT",
     "version": "0.0.1",
-    "main": "dist/index.js",
+    "description": "Store",
+    "main": "dist/cjs/index.js",
+    "module": "dist/esm/index.js",
+    "typings": "dist/esm/index.d.ts",
     "scripts": {
-        "start": "npm run build && serve dist/demo",
-        "build": "npm run clean && tsc -p tsconfig.prod.json && cp src/demo/index.html dist/demo/index.html && webpack --config webpack-demo.config.js",
-        "lint": "tslint --project .",
-        "test": "jasmine-ts --config=jasmine.json",
+        "// DEV SCRIPTS //": "-------------------------------------------------------",
+        "start": "run-s watch",
+        "build": "run-s clean build:esm build:cjs",
+        "build:esm": "tsc -p tsconfig.esm.json",
+        "build:cjs": "tsc -p tsconfig.cjs.json",
+        "build:example": "parcel build src/demo/index.html",
+        "watch": "parcel src/demo/index.html",
+        "// CODE QUALITY SCRIPTS //": "----------------------------------------------",
+        "lint": "tslint -c tslint.json src/*.ts",
+        "test": "jest --config jest.config.json",
+        "test:watch": "jest --config jest.config.json --watch",
+        "test:coverage": "jest --config jest.config.json --coverage",
+        "// UTILS SCRIPTS //": "-----------------------------------------------------",
+        "deploy:site": "gh-pages -d site -b master",
         "docs": "typedoc --mode modules --exclude \"**/*+(index|.spec|.e2e).ts\" --tsconfig tsconfig.prod.json --hideGenerator --readme README.md --out docs src",
-        "build-lint-test": "npm run build && npm run lint && npm run test",
-        "git-add": "git add .",
-        "precommit": "npm run build-lint-test && npm run docs && npm run git-add",
-        "prepush": "npm run lint && npm run test",
-        "clean": "rimraf dist && rimraf docs",
-        "watch": "nodemon --config nodemon.json"
+        "clean": "rimraf dist && rimraf docs && rimraf site && rimraf coverage",
+        "precommit": "run-s lint test build docs build:site clean",
+        "prepush": "run-s lint test"
     },
-    "dependencies": {},
+    "watch": {
+        "start": {
+            "patterns": [
+                "src"
+            ],
+            "ignores": [
+                "**/*.d.ts"
+            ],
+            "extensions": "ts,html",
+            "quiet": true
+        }
+    },
     "devDependencies": {
-        "@types/jasmine": "^2.8.8",
+        "@types/jest": "^23.3.1",
         "@types/node": "^6.0.0",
-        "babel-core": "^6.26.3",
-        "babel-jest": "^23.4.2",
-        "body-parser": "^1.18.3",
+        "gh-pages": "^1.1.0",
+        "http-server": "^0.11.1",
         "husky": "^0.14.3",
-        "jasmine": "^3.1.0",
-        "jasmine-core": "^3.1.0",
-        "jasmine-ts": "^0.2.1",
         "jest": "^23.4.2",
-        "nodemon": "^1.12.1",
+        "node-sass": "^4.9.2",
+        "npm-run-all": "^4.1.3",
+        "npm-watch": "^0.3.0",
+        "parcel": "^1.9.7",
         "rimraf": "^2.6.2",
-        "serve": "^9.4.0",
-        "stylelint": "^9.4.0",
-        "stylelint-config-recommended": "^2.1.0",
         "ts-jest": "^23.1.2",
         "tslint": "^5.9.1",
         "typedoc": "^0.11.1",
-        "typescript": "^2.9.2",
-        "webpack": "^4.16.2",
-        "webpack-cli": "^3.1.0"
-    }
+        "typescript": "^2.9.2"
+    },
+    "engines": {
+        "node": ">=6.1"
+    },
+    "author": "Filip Dabrowski",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:thefill/entrepot.git"
+    },
+    "license": "MIT",
+    "dependencies": {}
 }
