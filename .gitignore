@@ -11,6 +11,7 @@
 /dist
 **/dist/
 /cache
+.cache
 
 # misc
 /.idea

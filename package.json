@@ -7,12 +7,13 @@
     "typings": "dist/esm/index.d.ts",
     "scripts": {
         "// DEV SCRIPTS //": "-------------------------------------------------------",
-        "start": "run-s watch",
+        "start": "run-s watwatch:examplech",
+        "watch": "npm-watch build",
         "build": "run-s clean build:esm build:cjs",
         "build:esm": "tsc -p tsconfig.esm.json",
         "build:cjs": "tsc -p tsconfig.cjs.json",
+        "watch:example": "parcel src/demo/index.html",
         "build:example": "parcel build src/demo/index.html",
-        "watch": "parcel src/demo/index.html",
         "// CODE QUALITY SCRIPTS //": "----------------------------------------------",
         "lint": "tslint -c tslint.json src/*.ts",
         "test": "jest --config jest.config.json",
@@ -20,21 +21,21 @@
         "test:coverage": "jest --config jest.config.json --coverage",
         "// UTILS SCRIPTS //": "-----------------------------------------------------",
         "deploy:site": "gh-pages -d site -b master",
-        "docs": "typedoc --mode modules --exclude \"**/*+(index|.spec|.e2e).ts\" --tsconfig tsconfig.prod.json --hideGenerator --readme README.md --out docs src",
+        "docs": "typedoc --mode modules --exclude \"**/*+(index|.spec|.e2e).ts\" --tsconfig tsconfig.esm.json --hideGenerator --readme README.md --out docs src",
         "clean": "rimraf dist && rimraf docs && rimraf site && rimraf coverage",
         "precommit": "run-s lint test build docs build:site clean",
         "prepush": "run-s lint test"
     },
     "watch": {
-        "start": {
+        "build": {
             "patterns": [
                 "src"
             ],
             "ignores": [
                 "**/*.d.ts"
             ],
-            "extensions": "ts,html",
-            "quiet": true
+            "extensions": "ts",
+            "quiet": false
         }
     },
     "devDependencies": {

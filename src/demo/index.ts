@@ -1,4 +1,4 @@
-import {Store} from "../modules";
+import {Store, StoreEntryKeySubstitute} from "../modules";
 
 class DemoModule {
 
@@ -132,19 +132,20 @@ class DemoModule {
         }
 
         const namespace = this.getNamespaceInput.value;
-        const key = this.getKeyInput.value;
+        let key: StoreEntryKeySubstitute = this.getKeyInput.value;
 
-        let value;
         if (namespace){
-            value = this.store.get({
+            key = {
                 key,
                 namespace
-            });
-        } else {
-            value = this.store.get(key);
+            };
         }
 
-        this.getValuePlaceholder.innerHTML = value;
+        this.getValuePlaceholder.innerHTML = this.store.get(key);
+        this.updateHistory(key);
+    }
+
+    protected updateHistory(key){
         this.getHistoryPlaceholder.innerHTML = '<strong>Donkey</strong>';
     }
 

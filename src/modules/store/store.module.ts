@@ -16,8 +16,6 @@ export class Store<T = any> {
     // TODO: move back in time to next (if keep forward)
     // TODO: emit change
     // TODO: automatic docs via http://typedoc.org/guides/doccomments/
-    // TODO: move to npm-run-all
-    // TODO: move to npm-watch
 
     /**
      * Separate values from their references
