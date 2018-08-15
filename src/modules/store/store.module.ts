@@ -1,11 +1,13 @@
-import {StoreEntryKeyClass} from "./store-entry-key.class";
-import {StoreEntryClass} from "./store-entry.class";
+import {UtilsClass} from '../utils';
+import {StoreEntryKeyClass} from "../store-entry-key";
+import {StoreEntryClass} from "../store-entry";
 import {IInternalNamespaceStore, IInternalStore, IStoreEntry, StoreEntryKeySubstitute} from "./store.interface";
 
 /**
  * Main store class
  */
 export class Store<T = any> {
+    // TODO: get store snapshot not whole store: {namespace: {key: value}...}
     // TODO: get history list
     // TODO: get history length
     // TODO: get history list with values
@@ -16,25 +18,6 @@ export class Store<T = any> {
     // TODO: move back in time to next (if keep forward)
     // TODO: emit change
     // TODO: automatic docs via http://typedoc.org/guides/doccomments/
-
-    /**
-     * Separate values from their references
-     * @param {any} value
-     * @return {any}
-     */
-    private static decoupleValue(value: any): any {
-        if (!value) {
-            return value;
-        }
-
-        if (Array.isArray(value)) {
-            return value.slice();
-        } else if (typeof value === "object") {
-            return Object.assign({}, value);
-        }
-
-        return value;
-    }
 
     // Main store
     protected store: IInternalStore<T> = {};
@@ -76,7 +59,7 @@ export class Store<T = any> {
      * Reset:
      *  - whole store if no params provided
      *  - namespace: if namespace name or key provided
-     * @param {StoreEntryKeySubstitute} key
+     * @param {StoreEntryKeySubstitute} namespace
      */
     public reset(namespace?: StoreEntryKeySubstitute): void {
         // if any reference namespace provided
@@ -173,7 +156,7 @@ export class Store<T = any> {
             return;
         }
 
-        value = Store.decoupleValue(value);
+        value = UtilsClass.decoupleValue(value);
         this.setOrUpdateEntry(keyObject, value as T);
 
         return keyObject;

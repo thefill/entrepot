@@ -7,7 +7,7 @@
     "typings": "dist/esm/index.d.ts",
     "scripts": {
         "// DEV SCRIPTS //": "-------------------------------------------------------",
-        "start": "run-s watwatch:examplech",
+        "start": "run-s watch:example",
         "watch": "npm-watch build",
         "build": "run-s clean build:esm build:cjs",
         "build:esm": "tsc -p tsconfig.esm.json",
@@ -20,10 +20,10 @@
         "test:watch": "jest --config jest.config.json --watch",
         "test:coverage": "jest --config jest.config.json --coverage",
         "// UTILS SCRIPTS //": "-----------------------------------------------------",
-        "deploy:site": "gh-pages -d site -b master",
+        "deploy:site": "gh-pages -d site -b master && run-s docs build:site ",
         "docs": "typedoc --mode modules --exclude \"**/*+(index|.spec|.e2e).ts\" --tsconfig tsconfig.esm.json --hideGenerator --readme README.md --out docs src",
         "clean": "rimraf dist && rimraf docs && rimraf site && rimraf coverage",
-        "precommit": "run-s lint test build docs build:site clean",
+        "precommit": "run-s lint test build clean",
         "prepush": "run-s lint test"
     },
     "watch": {

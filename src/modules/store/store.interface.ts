@@ -1,18 +1,17 @@
+import {StoreEntryKeyClass} from "../store-entry-key";
+
 /**
  * Config for newly created store entry
  */
-import {StoreEntryKeyClass} from "./store-entry-key.class";
-
 export interface IStoreEntryConfig {
     namespace?: string;
-    key?: string;
-    // TODO: implement:
-    // history?: boolean;
-    // historyLimit?: number;
-    // Schema: json schema
-    // persistTime: number
-    // debounceEmit
-    // keepForwardHistory
+    key: string;
+    // TODO: implement: history?: boolean;
+    // TODO: implement: historyLimit?: number;
+    // TODO: implement: Schema: json schema
+    // TODO: implement: persistTime: number
+    // TODO: implement: debounceEmit
+    // TODO: implement: keepForwardHistory
 }
 
 /**

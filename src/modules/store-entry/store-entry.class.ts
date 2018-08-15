@@ -1,4 +1,4 @@
-import {IStoreEntry} from "./store.interface";
+import {IStoreEntry} from "../store";
 
 /**
  * Single store entry
