@@ -7,17 +7,18 @@ import {IInternalNamespaceStore, IInternalStore, IStoreEntry, StoreEntryKeySubst
  * Main store class
  */
 export class Store<T = any> {
-    // TODO: get store snapshot not whole store: {namespace: {key: value}...}
-    // TODO: get history list
-    // TODO: get history length
-    // TODO: get history list with values
+    // TODO: get history list with values (method: history)
     // TODO: move back in time x steps
     // TODO: get value from x step
     // TODO: get current step
     // TODO: move back in time to prev
     // TODO: move back in time to next (if keep forward)
+    // TODO: introduce find and findAll functions that accepts callback or value to seek + optional namespace
+    // TODO: introduce static current value for entry
+    // TODO: get store snapshot not whole store: {namespace: {key: value}...}
     // TODO: emit change
     // TODO: automatic docs via http://typedoc.org/guides/doccomments/
+    // TODO: introduce worker store!! ;-D (separate class that spawns store as a worker and communicate with it)
 
     // Main store
     protected store: IInternalStore<T> = {};
