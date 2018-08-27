@@ -1,7 +1,7 @@
 import {UtilsClass} from '../utils';
-import {StoreEntryKeyClass} from "../store-entry-key";
-import {StoreEntryClass} from "../store-entry";
-import {IInternalNamespaceStore, IInternalStore, IStoreEntry, StoreEntryKeySubstitute} from "./store.interface";
+import {StoreEntryKeyClass} from '../store-entry-key';
+import {StoreEntryClass} from '../store-entry';
+import {IInternalNamespaceStore, IInternalStore, IStoreEntry, StoreEntryKeySubstitute} from './store.interface';
 
 /**
  * Main store class
@@ -10,15 +10,16 @@ export class Store<T = any> {
     // TODO: get history list with values (method: history)
     // TODO: move back in time x steps
     // TODO: get value from x step
-    // TODO: get current step
     // TODO: move back in time to prev
     // TODO: move back in time to next (if keep forward)
+    // TODO: clean history if allowed limit reached
     // TODO: introduce find and findAll functions that accepts callback or value to seek + optional namespace
-    // TODO: introduce static current value for entry
-    // TODO: get store snapshot not whole store: {namespace: {key: value}...}
     // TODO: emit change
     // TODO: automatic docs via http://typedoc.org/guides/doccomments/
     // TODO: introduce worker store!! ;-D (separate class that spawns store as a worker and communicate with it)
+    // TODO: emit changes from single entry??
+    // TODO: get store snapshot not whole store: {namespace: {key: value}...}
+    // TODO: add benchmark of read/write to the tests
 
     // Main store
     protected store: IInternalStore<T> = {};
@@ -39,21 +40,13 @@ export class Store<T = any> {
 
     /**
      * Check if namespace, entry in namespace or entry alone exists
-     * @param {StoreEntryKeyClass} key
+     * @param {StoreEntryKeySubstitute} key
      * @returns {boolean}
      */
-    public entryExists(key: StoreEntryKeyClass): boolean {
-        // if namespace and key to check
-        if (key.namespace && key.key) {
-            return !!(this.namespaceStore[key.namespace] &&
-                this.namespaceStore[key.namespace][key.key]);
-        } else if (key.namespace) {
-            // if only namespace to check
-            return !!this.namespaceStore[key.namespace];
-        } else {
-            // if only entry
-            return !!this.store[key.key];
-        }
+    public exists(key: StoreEntryKeySubstitute): boolean {
+        const keyObject = new StoreEntryKeyClass(key);
+
+        return this.entryExists(keyObject);
     }
 
     /**
@@ -93,7 +86,6 @@ export class Store<T = any> {
                 return this.setEntry(setConfig.key, setConfig.value);
             });
         } else {
-            // if no value
             return this.setEntry(key, value);
         }
     }
@@ -106,14 +98,33 @@ export class Store<T = any> {
     public get(
         key: StoreEntryKeySubstitute | StoreEntryKeySubstitute[]
     ): T | void | Array<T | void> {
-        // if multiple entries to create
+        // if multiple entries to retrieve
         if (Array.isArray(key)) {
             return key.map((singleKey) => {
-                return this.getEntry(singleKey);
+                return this.getEntryValue(singleKey);
             });
         } else {
-            // if no value
-            return this.getEntry(key);
+            return this.getEntryValue(key);
+        }
+    }
+
+    /**
+     * Get position number
+     * @param {StoreEntryKeySubstitute | StoreEntryKeySubstitute[]} key
+     * @returns {void | Array<void | T> | T}
+     */
+    public position(
+        key: StoreEntryKeySubstitute | StoreEntryKeySubstitute[]
+    ): number | void | Array<number | void> {
+        // if request to get step for multiple entries
+        if (Array.isArray(key)) {
+            return key.map((singleKey) => {
+                const entry = this.getEntry(singleKey);
+                return entry ? entry.currentPosition : undefined;
+            });
+        } else {
+            const entry = this.getEntry(key);
+            return entry ? entry.currentPosition : undefined;
         }
     }
 
@@ -125,15 +136,51 @@ export class Store<T = any> {
     public delete(
         key: StoreEntryKeySubstitute | StoreEntryKeySubstitute[]
     ): T | void | Array<T | void> {
-        // if multiple entries to create
+        // if multiple entries to delete
         if (Array.isArray(key)) {
             return key.map((singleKey) => {
                 return this.deleteEntry(singleKey);
             });
         } else {
-            // if no value
             return this.deleteEntry(key);
         }
+    }
+
+    /**
+     * Check if namespace, entry in namespace or entry alone exists
+     * @param {StoreEntryKeyClass} key
+     * @returns {boolean}
+     */
+    protected entryExists(key: StoreEntryKeyClass): boolean {
+        // if namespace and key to check
+        if (key.namespace && key.key) {
+            return !!(this.namespaceStore[key.namespace] &&
+                this.namespaceStore[key.namespace][key.key]);
+        } else if (key.namespace) {
+            // if only namespace to check
+            return !!this.namespaceStore[key.namespace];
+        } else {
+            // if only entry
+            return !!this.store[key.key];
+        }
+    }
+
+    /**
+     * Get single entry current position
+     * @param {string | IStoreEntryConfig | StoreEntryKeyClass} key
+     * @returns {IStoreEntry | {[p: string]: IStoreEntry}}
+     */
+    protected getPosition(
+        key: StoreEntryKeySubstitute
+    ): number | void {
+        // retrieve entry
+        const entry = this.getEntry(key);
+
+        if (!entry) {
+            return;
+        }
+
+        return entry.currentPosition;
     }
 
     /**
@@ -165,12 +212,12 @@ export class Store<T = any> {
 
     /**
      * Get single entry
-     * @param {string | IStoreEntryConfig | StoreEntryKeyClass} key
-     * @returns {IStoreEntry | {[p: string]: IStoreEntry}}
+     * @param {StoreEntryKeySubstitute} key
+     * @returns {IStoreEntry<T> | void}
      */
     protected getEntry(
         key: StoreEntryKeySubstitute
-    ): T | void {
+    ): IStoreEntry<T> | void {
         const keyObject = new StoreEntryKeyClass(key);
 
         if (!keyObject.key) {
@@ -188,7 +235,27 @@ export class Store<T = any> {
         } else {
             entry = this.store[keyObject.key];
         }
-        return entry.history[entry.currentStep];
+
+        return entry;
+    }
+
+    /**
+     *
+     * Get single entry value
+     * @param {StoreEntryKeySubstitute} key
+     * @returns {void | T}
+     */
+    protected getEntryValue(
+        key: StoreEntryKeySubstitute
+    ): T | void {
+        // retrieve entry
+        const entry = this.getEntry(key);
+
+        if (!entry) {
+            return;
+        }
+
+        return entry.history[entry.currentPosition];
     }
 
     /**
@@ -215,14 +282,14 @@ export class Store<T = any> {
         // if entry in namespace
         if (keyObject.namespace && keyObject.key) {
             entry = this.namespaceStore[keyObject.namespace][keyObject.key];
-            return entry.history[entry.currentStep];
+            return entry.history[entry.currentPosition];
         } else if (keyObject.namespace) {
             // if only namespace provided
             delete this.namespaceStore[keyObject.namespace];
             return;
         } else {
             entry = this.store[keyObject.key];
-            return entry.history[entry.currentStep];
+            return entry.history[entry.currentPosition];
         }
     }
 
@@ -237,7 +304,13 @@ export class Store<T = any> {
         if (!this.entryExists(key)) {
             const entry = new StoreEntryClass<T>(value);
             if (key.namespace) {
-                this.namespaceStore[key.namespace] = {[key.key]: entry};
+                // if namespace exist preserve its content
+                if (this.namespaceStore[key.namespace]) {
+                    this.namespaceStore[key.namespace][key.key] = entry;
+                } else {
+                    // create new namespace entry
+                    this.namespaceStore[key.namespace] = {[key.key]: entry};
+                }
             } else {
                 this.store[key.key] = entry;
             }

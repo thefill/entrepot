@@ -23,7 +23,7 @@ export type StoreEntryKeySubstitute = string | IStoreEntryConfig | StoreEntryKey
  * Single entry
  */
 export interface IStoreEntry<T = any> {
-    currentStep: number;
+    currentPosition: number;
     history: T[];
     update: (value: T) => number;
 }

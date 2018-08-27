@@ -4,9 +4,8 @@ import {IStoreEntry} from "../store";
  * Single store entry
  */
 export class StoreEntryClass<T = any> implements IStoreEntry {
-    // TODO: emit changes from single entry??
     // current step in history we are on
-    public currentStep: number = 0;
+    public currentPosition: number = 0;
     // history of value
     public history: T[] = [];
 
@@ -22,7 +21,7 @@ export class StoreEntryClass<T = any> implements IStoreEntry {
      */
     public update(value: T): number {
         // Remove all entries that are in front of current step
-        this.history = this.history.slice(0, this.currentStep);
+        this.history = this.history.slice(0, this.currentPosition);
         return this.history.push(value);
     }
 }

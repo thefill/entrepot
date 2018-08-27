@@ -1,7 +1,9 @@
 {
     "extends": ["tslint:recommended"],
     "linterOptions": {
-        "exclude": ["config/**/*.js", "node_modules/**/*.ts"]
+        "exclude": [
+            "node_modules/**/*.ts"
+        ]
     },
     "rules": {
         "quotemark": false,
