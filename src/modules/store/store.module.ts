@@ -59,14 +59,15 @@ export class Store<T = any> {
         // if any reference namespace provided
         if (typeof namespace !== 'undefined') {
             if (typeof namespace === 'string') {
-                delete this.store[namespace];
+                delete this.namespaceStore[namespace];
             } else if (namespace.namespace) {
                 // if object with key provided
-                delete this.store[namespace.namespace];
+                delete this.namespaceStore[namespace.namespace];
             }
         } else {
             // reset whole store
             this.store = {};
+            this.namespaceStore = {};
         }
     }
 
@@ -278,18 +279,25 @@ export class Store<T = any> {
 
         // get entry value and delete entry form store
         let entry: IStoreEntry<T>;
+        let value: T;
 
         // if entry in namespace
         if (keyObject.namespace && keyObject.key) {
             entry = this.namespaceStore[keyObject.namespace][keyObject.key];
-            return entry.history[entry.currentPosition];
+            value = entry.history[entry.currentPosition];
+
+            delete this.namespaceStore[keyObject.namespace][keyObject.key];
+            return value;
         } else if (keyObject.namespace) {
             // if only namespace provided
             delete this.namespaceStore[keyObject.namespace];
             return;
         } else {
             entry = this.store[keyObject.key];
-            return entry.history[entry.currentPosition];
+            value = entry.history[entry.currentPosition];
+
+            delete this.store[keyObject.key];
+            return value;
         }
     }
 
