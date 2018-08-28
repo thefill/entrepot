@@ -45,17 +45,17 @@ describe('Store', () => {
     describe('should add', () => {
 
         describe('single entry', () => {
+
+            // Local assertion callback
+            const assertExist = (values: any[], key: StoreEntryKeySubstitute) => {
+                values.forEach((value) => {
+                    store = new Store();
+                    store.set(key, value);
+                    expect(store.exists(key)).toBeTruthy();
+                });
+            };
+
             Object.keys(keys).forEach((keyLabel) => {
-
-                // Local assertion callback
-                const assertExist = (values: any[], key: StoreEntryKeySubstitute) => {
-                    values.forEach((value) => {
-                        store = new Store();
-                        store.set(key, value);
-                        expect(store.exists(key)).toBeTruthy();
-                    });
-                };
-
                 describe(`with primitive value`, () => {
                     it(`using ${keyLabel} as an identifier`, () => {
                         assertExist(primitiveValues, keys[keyLabel]);
@@ -128,20 +128,21 @@ describe('Store', () => {
 
     });
 
-    it('should return key object when setting new entry', () => {
+    describe('should return key object when setting', () => {
 
         describe('single entry', () => {
-            Object.keys(keys).forEach((keyLabel) => {
 
-                // Local assertion callback
-                const assertReturnedKey = (values: any[], key: StoreEntryKeySubstitute) => {
-                    // TODO: implement
-                    // values.forEach((value) => {
-                    //     store = new Store();
-                    //     store.set(key, value);
-                    //     expect(store.exists(key)).toBeTruthy();
-                    // });
-                };
+            // Local assertion callback
+            const assertReturnedKey = (values: any[], key: StoreEntryKeySubstitute) => {
+                // TODO: implement
+                values.forEach((value) => {
+                    store = new Store();
+                    const returnedKey = store.set(key, value);
+                    expect(returnedKey instanceof StoreEntryKeyClass).toBeTruthy();
+                });
+            };
+
+            Object.keys(keys).forEach((keyLabel) => {
 
                 describe(`with primitive value`, () => {
                     it(`using ${keyLabel} as an identifier`, () => {
@@ -171,24 +172,28 @@ describe('Store', () => {
                 values: any[],
                 keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
             ) => {
-                // TODO: implement
-                // values.forEach((value) => {
-                //     store = new Store();
-                //     const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
-                //
-                //     Object.keys(keyConfigs).forEach((keyLabel) => {
-                //         sets.push({
-                //             key: keyConfigs[keyLabel],
-                //             value: value
-                //         });
-                //     });
-                //
-                //     store.set(sets);
-                //
-                //     Object.keys(keyConfigs).forEach((keyLabel) => {
-                //         expect(store.exists(keyConfigs[keyLabel])).toBeTruthy();
-                //     });
-                // });
+
+                values.forEach((value) => {
+                    store = new Store();
+                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
+
+                    Object.keys(keyConfigs).forEach((keyLabel) => {
+                        sets.push({
+                            key: keyConfigs[keyLabel],
+                            value: value
+                        });
+                    });
+
+                    const returnedKeys = store.set(sets) as Array<void | StoreEntryKeyClass>;
+
+                    if (returnedKeys){
+                        returnedKeys.forEach((returnedKey) => {
+                            expect(returnedKey instanceof StoreEntryKeyClass).toBeTruthy();
+                        });
+                    } else {
+                        expect(Array.isArray(returnedKeys)).toBeTruthy();
+                    }
+                });
             };
 
             it(`with primitive values`, () => {
