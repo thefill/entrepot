@@ -1,9 +1,8 @@
 import {StoreEntryKeyClass} from '../store-entry-key';
-import {IStoreEntryConfig, StoreEntryKeySubstitute} from './store.interface';
-import {Store} from './store.module';
 import {generateTestValues} from '../utils/utils.spec';
+import {IStoreConfig, IStoreEntryKeyConfig, StoreEntryKeySubstitute} from './store.interface';
+import {Store} from './store.module';
 
-// TODO: implement tests
 describe('Store', () => {
     let store: Store;
     let primitiveValues: Array<string | number>;
@@ -134,7 +133,6 @@ describe('Store', () => {
 
             // Local assertion callback
             const assertReturnedKey = (values: any[], key: StoreEntryKeySubstitute) => {
-                // TODO: implement
                 values.forEach((value) => {
                     store = new Store();
                     const returnedKey = store.set(key, value);
@@ -186,7 +184,7 @@ describe('Store', () => {
 
                     const returnedKeys = store.set(sets) as Array<void | StoreEntryKeyClass>;
 
-                    if (returnedKeys) {
+                    if (returnedKeys){
                         returnedKeys.forEach((returnedKey) => {
                             expect(returnedKey instanceof StoreEntryKeyClass).toBeTruthy();
                         });
@@ -218,6 +216,7 @@ describe('Store', () => {
             });
 
         });
+
     });
 
     describe('should retrieve values', () => {
@@ -326,7 +325,10 @@ describe('Store', () => {
                     });
                 });
 
-                store = new Store(sets);
+                const storeConfig: IStoreConfig = {
+                    initialValues: sets
+                };
+                store = new Store(storeConfig);
 
                 Object.keys(keyConfigs).forEach((keyLabel) => {
                     const retrievedValue = store.get(keyConfigs[keyLabel]);
@@ -375,7 +377,10 @@ describe('Store', () => {
                     });
                 });
 
-                store = new Store(sets);
+                const storeConfig: IStoreConfig = {
+                    initialValues: sets
+                };
+                store = new Store(storeConfig);
 
                 Object.keys(keyConfigs).forEach((keyLabel) => {
                     expect(store.exists(keyConfigs[keyLabel])).toBeTruthy();
@@ -429,7 +434,10 @@ describe('Store', () => {
                     });
                 });
 
-                store = new Store(sets);
+                const storeConfig: IStoreConfig = {
+                    initialValues: sets
+                };
+                store = new Store(storeConfig);
                 store.reset();
 
                 Object.keys(keys).forEach((keyLabel) => {
@@ -459,13 +467,16 @@ describe('Store', () => {
                     });
                 });
 
-                store = new Store(sets);
+                const storeConfig: IStoreConfig = {
+                    initialValues: sets
+                };
+                store = new Store(storeConfig);
                 store.reset(namespaceToReset);
 
                 Object.keys(keys).forEach((keyLabel) => {
-                    if (typeof keys[keyLabel] !== 'string') {
-                        const keyToCheck = keys[keyLabel] as IStoreEntryConfig | StoreEntryKeyClass;
-                        if (keyToCheck.namespace === namespaceToReset) {
+                    if (typeof keys[keyLabel] !== 'string'){
+                        const keyToCheck = keys[keyLabel] as IStoreEntryKeyConfig | StoreEntryKeyClass;
+                        if (keyToCheck.namespace === namespaceToReset){
                             expect(store.exists(keys[keyLabel])).toBeFalsy();
                         } else {
                             expect(store.exists(keys[keyLabel])).toBeTruthy();
@@ -568,11 +579,381 @@ describe('Store', () => {
 
     });
 
-    it('should return correct position', () => {
-        expect(1).toBeTruthy();
-        // public position(
-        //         key: StoreEntryKeySubstitute | StoreEntryKeySubstitute[]
-        //     ): number | void | Array<number | void> {
+    describe('should return correct position', () => {
+
+        describe('for single entry', () => {
+
+            // Local assertion callback
+            const assertPosition = (values: any[], key: StoreEntryKeySubstitute) => {
+                values.forEach((value) => {
+                    store = new Store();
+                    for (let i = 0; i < 5; i++) {
+                        store.set(key, value);
+                        expect(store.position(key)).toEqual(i);
+                    }
+                });
+            };
+
+            Object.keys(keys).forEach((keyLabel) => {
+                it(`using ${keyLabel} as an identifier`, () => {
+                    // Local assertion callback
+                    const mixedValues = [
+                        ...primitiveValues,
+                        ...arrays,
+                        ...objects
+                    ];
+
+                    assertPosition(mixedValues, keys[keyLabel]);
+                });
+            });
+
+        });
+
+        describe('for multiple entries', () => {
+
+            // Local assertion callback
+            const assertMultiplePositions = (
+                values: any[],
+                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
+            ) => {
+                values.forEach((value) => {
+                    store = new Store();
+                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
+
+                    Object.keys(keyConfigs).forEach((keyLabel) => {
+                        sets.push({
+                            key: keyConfigs[keyLabel],
+                            value: value
+                        });
+                    });
+
+                    const keysToCheck = sets.map((set) => {
+                        return set.key;
+                    });
+
+                    for (let i = 0; i < 5; i++) {
+                        store.set(sets);
+
+                        const returnedPositions = store.position(keysToCheck) as number[];
+
+                        if (returnedPositions){
+                            returnedPositions.forEach((position) => {
+                                expect(position).toEqual(i);
+                            });
+                        } else {
+                            expect(Array.isArray(returnedPositions)).toBeTruthy();
+                        }
+                    }
+                });
+            };
+
+            it(`using various key types as an identifier`, () => {
+                const mixedValues = [
+                    ...primitiveValues,
+                    ...arrays,
+                    ...objects
+                ];
+                assertMultiplePositions(mixedValues, keys);
+            });
+
+        });
     });
-})
-;
+
+    describe('should limit history', () => {
+        it('no limit by default', () => {
+            store = new Store();
+            expect(store.limitHistory).toEqual(0);
+        });
+        it('limit by store config', () => {
+            store = new Store({
+                limitHistory: 10
+            });
+            expect(store.limitHistory).toEqual(10);
+        });
+
+        describe('for single entry', () => {
+
+            // Local assertion callback
+            const assertLimit = (values: any[], key: StoreEntryKeySubstitute) => {
+                values.forEach((value) => {
+                    const limit = 3;
+                    store = new Store({
+                        limitHistory: limit
+                    });
+                    for (let i = 0; i < 5; i++) {
+                        store.set(key, value);
+                        // We expect to reach limit of entries so for limit 3 max position will be 2 (0-based index)
+                        const expectedPosition = i < limit ? i : limit - 1;
+                        expect(store.position(key)).toEqual(expectedPosition);
+                        expect(store.get(key)).toEqual(value);
+                    }
+                });
+            };
+
+            Object.keys(keys).forEach((keyLabel) => {
+                it(`using ${keyLabel} as an identifier`, () => {
+                    // Local assertion callback
+                    const mixedValues = [
+                        ...primitiveValues,
+                        ...arrays,
+                        ...objects
+                    ];
+
+                    assertLimit(mixedValues, keys[keyLabel]);
+                });
+            });
+
+        });
+
+        describe('for multiple entries', () => {
+
+            // Local assertion callback
+            const assertMultipleLimits = (
+                values: any[],
+                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
+            ) => {
+                values.forEach((value) => {
+                    const limit = 3;
+                    store = new Store({
+                        limitHistory: limit
+                    });
+                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
+
+                    Object.keys(keyConfigs).forEach((keyLabel) => {
+                        sets.push({
+                            key: keyConfigs[keyLabel],
+                            value: value
+                        });
+                    });
+
+                    const keysToCheck = sets.map((set) => {
+                        return set.key;
+                    });
+
+                    for (let i = 0; i < 5; i++) {
+                        store.set(sets);
+
+                        const returnedPositions = store.position(keysToCheck) as number[];
+
+                        if (returnedPositions){
+                            // We expect to reach limit of entries so for limit 3 max position will be 2 (0-based index)
+                            const expectedPosition = i < limit ? i : limit - 1;
+
+                            returnedPositions.forEach((position) => {
+                                expect(position).toEqual(expectedPosition);
+                            });
+
+                            sets.forEach((set) => {
+                                expect(store.get(set.key)).toEqual(set.value);
+                            });
+                        } else {
+                            expect(Array.isArray(returnedPositions)).toBeTruthy();
+                        }
+                    }
+                });
+            };
+
+            it(`using various key types as an identifier`, () => {
+                const mixedValues = [
+                    ...primitiveValues,
+                    ...arrays,
+                    ...objects
+                ];
+                assertMultipleLimits(mixedValues, keys);
+            });
+
+        });
+    });
+
+    describe('should disable history', () => {
+        it('history enabled by default', () => {
+            store = new Store();
+            expect(store.keepHistory).toBeTruthy();
+        });
+        it('disable history by store config', () => {
+            store = new Store({
+                keepHistory: false
+            });
+            expect(store.keepHistory).toBeFalsy();
+        });
+
+        describe('for single entry', () => {
+
+            // Local assertion callback
+            const assertDisabledHistory = (values: any[], key: StoreEntryKeySubstitute) => {
+                values.forEach((value) => {
+                    store = new Store({
+                        keepHistory: false
+                    });
+                    for (let i = 0; i < 5; i++) {
+                        store.set(key, value);
+                        expect(store.position(key)).toEqual(1);
+                        expect(store.get(key)).toEqual(value);
+                    }
+                });
+            };
+
+            Object.keys(keys).forEach((keyLabel) => {
+                it(`using ${keyLabel} as an identifier`, () => {
+                    // Local assertion callback
+                    const mixedValues = [
+                        ...primitiveValues,
+                        ...arrays,
+                        ...objects
+                    ];
+
+                    assertDisabledHistory(mixedValues, keys[keyLabel]);
+                });
+            });
+
+        });
+
+        describe('for multiple entries', () => {
+
+            // Local assertion callback
+            const assertMultipleDisabledHistory = (
+                values: any[],
+                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
+            ) => {
+                values.forEach((value) => {
+                    store = new Store({
+                        keepHistory: false
+                    });
+                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
+
+                    Object.keys(keyConfigs).forEach((keyLabel) => {
+                        sets.push({
+                            key: keyConfigs[keyLabel],
+                            value: value
+                        });
+                    });
+
+                    const keysToCheck = sets.map((set) => {
+                        return set.key;
+                    });
+
+                    for (let i = 0; i < 5; i++) {
+                        store.set(sets);
+
+                        const returnedPositions = store.position(keysToCheck) as number[];
+
+                        if (returnedPositions){
+                            // We expect to reach limit of entries so for limit 3 max position will be 2 (0-based index)
+                            const expectedPosition = i < limit ? i : limit - 1;
+
+                            returnedPositions.forEach((position) => {
+                                expect(position).toEqual(expectedPosition);
+                            });
+
+                            sets.forEach((set) => {
+                                expect(store.get(set.key)).toEqual(set.value);
+                            });
+                        } else {
+                            expect(Array.isArray(returnedPositions)).toBeTruthy();
+                        }
+                    }
+                });
+            };
+
+            it(`using various key types as an identifier`, () => {
+                const mixedValues = [
+                    ...primitiveValues,
+                    ...arrays,
+                    ...objects
+                ];
+                assertMultipleDisabledHistory(mixedValues, keys);
+            });
+
+        });
+    });
+
+    describe('should handle non-linear history', () => {
+        it('non-linear history disabled by default', () => {
+            store = new Store();
+            expect(store.keepForwardHistory).toBeFalsy();
+        });
+        it('enable non-linear history by store config', () => {
+            store = new Store({
+                keepForwardHistory: true
+            });
+            expect(store.keepHistory).toBeTruthy();
+        });
+
+        xdescribe('for single entry', () => {
+
+            // Local assertion callback
+            const assertPosition = (values: any[], key: StoreEntryKeySubstitute) => {
+                values.forEach((value) => {
+                    store = new Store();
+                    for (let i = 0; i < 5; i++) {
+                        store.set(key, value);
+                        expect(store.position(key)).toEqual(i);
+                    }
+                });
+            };
+
+            Object.keys(keys).forEach((keyLabel) => {
+                it(`using ${keyLabel} as an identifier`, () => {
+                    // Local assertion callback
+                    const mixedValues = [
+                        ...primitiveValues,
+                        ...arrays,
+                        ...objects
+                    ];
+
+                    assertPosition(mixedValues, keys[keyLabel]);
+                });
+            });
+
+        });
+
+        xdescribe('for multiple entries', () => {
+
+            // Local assertion callback
+            const assertMultiplePositions = (
+                values: any[],
+                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
+            ) => {
+                values.forEach((value) => {
+                    store = new Store();
+                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
+
+                    Object.keys(keyConfigs).forEach((keyLabel) => {
+                        sets.push({
+                            key: keyConfigs[keyLabel],
+                            value: value
+                        });
+                    });
+
+                    const keysToCheck = sets.map((set) => {
+                        return set.key;
+                    });
+
+                    for (let i = 0; i < 5; i++) {
+                        store.set(sets);
+
+                        const returnedPositions = store.position(keysToCheck) as number[];
+
+                        if (returnedPositions){
+                            returnedPositions.forEach((position) => {
+                                expect(position).toEqual(i);
+                            });
+                        } else {
+                            expect(Array.isArray(returnedPositions)).toBeTruthy();
+                        }
+                    }
+                });
+            };
+
+            it(`using various key types as an identifier`, () => {
+                const mixedValues = [
+                    ...primitiveValues,
+                    ...arrays,
+                    ...objects
+                ];
+                assertMultiplePositions(mixedValues, keys);
+            });
+
+        });
+    });
+});

@@ -1,19 +1,23 @@
-import {IStoreEntryConfig} from "../store";
+import {IStoreEntryKeyConfig} from "../store";
 
 /**
  * Represents key for the store entry
  */
-export class StoreEntryKeyClass {
+export class StoreEntryKeyClass implements IStoreEntryKeyConfig{
     // Entry namespace key
     public namespace: string;
     // Entry key
     public key: string;
+    // history enabled, by default enabled
+    public keepHistory = true;
+    // history limit, by default no limit
+    public limitHistory = 0;
 
     /**
      * Create key
-     * @param {string | IStoreEntryConfig | StoreEntryKeyClass} key
+     * @param {string | IStoreEntryKeyConfig | StoreEntryKeyClass} key
      */
-    constructor(key?: string | IStoreEntryConfig | StoreEntryKeyClass){
+    constructor(key?: string | IStoreEntryKeyConfig | StoreEntryKeyClass){
         // if no values
         if (!key){
             return;

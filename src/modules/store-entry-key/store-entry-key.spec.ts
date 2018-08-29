@@ -1,4 +1,4 @@
-import {IStoreEntryConfig, StoreEntryKeySubstitute} from '../store';
+import {IStoreEntryKeyConfig, StoreEntryKeySubstitute} from '../store';
 import {StoreEntryKeyClass} from './store-entry-key.class';
 
 describe('Store entry key', () => {
@@ -14,7 +14,7 @@ describe('Store entry key', () => {
         expect(typeof key.namespace).toEqual('undefined');
     });
     it('should be valid when constructed with entry config object', () => {
-        const configs: IStoreEntryConfig[] = [
+        const configs: IStoreEntryKeyConfig[] = [
             {key: 'someKey'},
             {namespace: 'someNamespace', key: 'someKey'}
         ];
