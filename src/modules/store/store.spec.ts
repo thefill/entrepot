@@ -766,10 +766,12 @@ describe('Store', () => {
     });
 
     describe('should disable history', () => {
+
         it('history enabled by default', () => {
             store = new Store();
             expect(store.keepHistory).toBeTruthy();
         });
+
         it('disable history by store config', () => {
             store = new Store({
                 keepHistory: false
@@ -787,7 +789,7 @@ describe('Store', () => {
                     });
                     for (let i = 0; i < 5; i++) {
                         store.set(key, value);
-                        expect(store.position(key)).toEqual(1);
+                        expect(store.position(key)).toEqual(0);
                         expect(store.get(key)).toEqual(value);
                     }
                 });
@@ -838,11 +840,9 @@ describe('Store', () => {
                         const returnedPositions = store.position(keysToCheck) as number[];
 
                         if (returnedPositions){
-                            // We expect to reach limit of entries so for limit 3 max position will be 2 (0-based index)
-                            const expectedPosition = i < limit ? i : limit - 1;
 
                             returnedPositions.forEach((position) => {
-                                expect(position).toEqual(expectedPosition);
+                                expect(position).toEqual(0);
                             });
 
                             sets.forEach((set) => {
@@ -868,41 +868,80 @@ describe('Store', () => {
     });
 
     describe('should handle non-linear history', () => {
+
         it('non-linear history disabled by default', () => {
             store = new Store();
             expect(store.keepForwardHistory).toBeFalsy();
         });
+
         it('enable non-linear history by store config', () => {
             store = new Store({
                 keepForwardHistory: true
             });
-            expect(store.keepHistory).toBeTruthy();
+            expect(store.keepForwardHistory).toBeTruthy();
         });
+
+        // TODO: implement moving in history first
 
         xdescribe('for single entry', () => {
 
             // Local assertion callback
-            const assertPosition = (values: any[], key: StoreEntryKeySubstitute) => {
+            const assertNonLinearHistory = (
+                values: any[],
+                key: StoreEntryKeySubstitute,
+                keepForwardHistory: boolean
+            ) => {
                 values.forEach((value) => {
-                    store = new Store();
-                    for (let i = 0; i < 5; i++) {
-                        store.set(key, value);
-                        expect(store.position(key)).toEqual(i);
+                    store = new Store({
+                        keepForwardHistory: keepForwardHistory
+                    });
+
+                    const historyLength = 10;
+                    const positionToMoveTo = 5;
+                    const expectedHistoryLength = historyLength + 1;
+                    if (keepForwardHistory){
+
                     }
+
+                    for (let i = 0; i < historyLength - 1; i++) {
+                        store.set(key, value);
+                    }
+
                 });
             };
 
-            Object.keys(keys).forEach((keyLabel) => {
-                it(`using ${keyLabel} as an identifier`, () => {
-                    // Local assertion callback
-                    const mixedValues = [
-                        ...primitiveValues,
-                        ...arrays,
-                        ...objects
-                    ];
+            describe('if non-linear history enabled', () => {
 
-                    assertPosition(mixedValues, keys[keyLabel]);
+                Object.keys(keys).forEach((keyLabel) => {
+                    it(`using ${keyLabel} as an identifier`, () => {
+                        // Local assertion callback
+                        const mixedValues = [
+                            ...primitiveValues,
+                            ...arrays,
+                            ...objects
+                        ];
+
+                        assertNonLinearHistory(mixedValues, keys[keyLabel], true);
+                    });
                 });
+
+            });
+
+            describe('if non-linear history disabled', () => {
+
+                Object.keys(keys).forEach((keyLabel) => {
+                    it(`using ${keyLabel} as an identifier`, () => {
+                        // Local assertion callback
+                        const mixedValues = [
+                            ...primitiveValues,
+                            ...arrays,
+                            ...objects
+                        ];
+
+                        assertNonLinearHistory(mixedValues, keys[keyLabel], false);
+                    });
+                });
+
             });
 
         });
@@ -910,12 +949,15 @@ describe('Store', () => {
         xdescribe('for multiple entries', () => {
 
             // Local assertion callback
-            const assertMultiplePositions = (
+            const assertMultipleNonLinearHistory = (
                 values: any[],
-                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
+                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute },
+                keepForwardHistory: boolean
             ) => {
                 values.forEach((value) => {
-                    store = new Store();
+                    store = new Store({
+                        keepForwardHistory: keepForwardHistory
+                    });
                     const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
 
                     Object.keys(keyConfigs).forEach((keyLabel) => {
@@ -945,15 +987,32 @@ describe('Store', () => {
                 });
             };
 
-            it(`using various key types as an identifier`, () => {
-                const mixedValues = [
-                    ...primitiveValues,
-                    ...arrays,
-                    ...objects
-                ];
-                assertMultiplePositions(mixedValues, keys);
+            xdescribe('if non-linear history enabled', () => {
+
+                it(`using various key types as an identifier`, () => {
+                    const mixedValues = [
+                        ...primitiveValues,
+                        ...arrays,
+                        ...objects
+                    ];
+                    assertMultipleNonLinearHistory(mixedValues, keys);
+                });
+
             });
 
+            xdescribe('if non-linear history disabled', () => {
+
+                it(`using various key types as an identifier`, () => {
+                    const mixedValues = [
+                        ...primitiveValues,
+                        ...arrays,
+                        ...objects
+                    ];
+                    assertMultipleNonLinearHistory(mixedValues, keys);
+                });
+
+            });
         });
+
     });
 });
