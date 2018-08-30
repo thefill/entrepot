@@ -867,6 +867,11 @@ describe('Store', () => {
         });
     });
 
+    describe('should retrieve entry history', () => {
+        // TODO: implement
+        // public history(key: StoreEntryKeySubstitute): T[] | void {/**/
+    });
+
     describe('should handle non-linear history', () => {
 
         it('non-linear history disabled by default', () => {

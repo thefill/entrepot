@@ -13,12 +13,10 @@ import {
  * Main store class
  */
 export class Store<T = any> implements IStoreConfig<T> {
-    // TODO: get history list with values (method: history)
     // TODO: move back in time x steps
     // TODO: get value from x step
     // TODO: move back in time to prev
     // TODO: move back in time to next (if keep forward)
-    // TODO: clean history if allowed limit reached
     // TODO: introduce find and findAll functions that accepts callback or value to seek + optional namespace
     // TODO: emit change
     // TODO: automatic docs via http://typedoc.org/guides/doccomments/
@@ -54,6 +52,21 @@ export class Store<T = any> implements IStoreConfig<T> {
             delete config.initialValues;
             Object.assign(this, config);
         }
+    }
+
+    /**
+     * Get history
+     * @param {StoreEntryKeySubstitute} key
+     * @return {T[] | void}
+     */
+    public history(key: StoreEntryKeySubstitute): T[] | void {
+        const entry = this.getEntry(key);
+
+        if (!entry){
+            return;
+        }
+
+        return entry.history.slice();
     }
 
     /**

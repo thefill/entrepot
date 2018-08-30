@@ -46,7 +46,7 @@ export type StoreEntryKeySubstitute = string | IStoreEntryKeyConfig | StoreEntry
 /**
  * Single entry
  */
-export interface IStoreEntry<T = any> extends IStoreConfig {
+export interface IStoreEntry<T = any> {
     currentPosition: number;
     history: T[];
 }
