@@ -13,15 +13,12 @@ import {
  * Main store class
  */
 export class Store<T = any> implements IStoreConfig<T> {
-    // TODO: move back in time x steps
-    // TODO: get value from x step
-    // TODO: move back in time to prev
-    // TODO: move back in time to next (if keep forward)
     // TODO: introduce find and findAll functions that accepts callback or value to seek + optional namespace
+    // ---
     // TODO: emit change
-    // TODO: automatic docs via http://typedoc.org/guides/doccomments/
+    // TODO: emit changes from single entry?? (nope - events enum + passed entry)
     // TODO: introduce worker store!! ;-D (separate class that spawns store as a worker and communicate with it)
-    // TODO: emit changes from single entry??
+    // TODO: automatic docs via http://typedoc.org/guides/doccomments/
     // TODO: get store snapshot not whole store: {namespace: {key: value}...}
     // TODO: add benchmark of read/write to the tests
 
@@ -41,10 +38,10 @@ export class Store<T = any> implements IStoreConfig<T> {
      * Constructor
      * @param {IStoreConfig<T>} config
      */
-    constructor(config?: IStoreConfig<T>){
-        if (config){
+    constructor(config?: IStoreConfig<T>) {
+        if (config) {
             // if values provided
-            if (Array.isArray(config.initialValues) && config.initialValues.length){
+            if (Array.isArray(config.initialValues) && config.initialValues.length) {
                 // hydrate store with values
                 this.set(config.initialValues);
             }
@@ -62,7 +59,7 @@ export class Store<T = any> implements IStoreConfig<T> {
     public history(key: StoreEntryKeySubstitute): T[] | void {
         const entry = this.getEntry(key);
 
-        if (!entry){
+        if (!entry) {
             return;
         }
 
@@ -70,11 +67,61 @@ export class Store<T = any> implements IStoreConfig<T> {
     }
 
     /**
+     * Move back in history if possible
+     * @param {StoreEntryKeySubstitute} key
+     * @param {number} positionCount
+     * @returns {void | T}
+     */
+    public undo(key: StoreEntryKeySubstitute, positionCount: number = 1): T | void {
+        const entry = this.getEntry(key);
+
+        if (!entry) {
+            return;
+        }
+
+        // if not at the begin of the history stack
+        if (entry.currentPosition > 0) {
+            if (entry.currentPosition - positionCount >= 0) {
+                entry.currentPosition -= positionCount;
+            } else {
+                entry.currentPosition = 0;
+            }
+        }
+
+        return entry.history[entry.currentPosition];
+    }
+
+    /**
+     * Move forward in history if possible
+     * @param {StoreEntryKeySubstitute} key
+     * @param {number} positionCount
+     * @returns {void | T}
+     */
+    public redo(key: StoreEntryKeySubstitute, positionCount: number = 1): T | void {
+        const entry = this.getEntry(key);
+
+        if (!entry) {
+            return;
+        }
+
+        // if not at the end of the history stack
+        if (entry.currentPosition < entry.history.length - 1) {
+            if (entry.currentPosition + positionCount <= entry.history.length - 1) {
+                entry.currentPosition += positionCount;
+            } else {
+                entry.currentPosition = entry.history.length - 1;
+            }
+        }
+
+        return entry.history[entry.currentPosition];
+    }
+
+    /**
      * Check if namespace, entry in namespace or entry alone exists
      * @param {StoreEntryKeySubstitute} key
      * @returns {boolean}
      */
-    public exists(key: StoreEntryKeySubstitute): boolean{
+    public exists(key: StoreEntryKeySubstitute): boolean {
         const keyObject = new StoreEntryKeyClass(key);
 
         return this.entryExists(keyObject);
@@ -86,12 +133,12 @@ export class Store<T = any> implements IStoreConfig<T> {
      *  - namespace: if namespace name or key provided
      * @param {StoreEntryKeySubstitute} namespace
      */
-    public reset(namespace?: StoreEntryKeySubstitute): void{
+    public reset(namespace?: StoreEntryKeySubstitute): void {
         // if any reference namespace provided
-        if (typeof namespace !== 'undefined'){
-            if (typeof namespace === 'string'){
+        if (typeof namespace !== 'undefined') {
+            if (typeof namespace === 'string') {
                 delete this.namespaceStore[namespace];
-            } else if (namespace.namespace){
+            } else if (namespace.namespace) {
                 // if object with key provided
                 delete this.namespaceStore[namespace.namespace];
             }
@@ -111,9 +158,9 @@ export class Store<T = any> implements IStoreConfig<T> {
     public set(
         key: StoreEntryKeySubstitute | Array<{ key: StoreEntryKeySubstitute, value: T }>,
         value?: T
-    ): StoreEntryKeyClass | void | Array<StoreEntryKeyClass | void>{
+    ): StoreEntryKeyClass | void | Array<StoreEntryKeyClass | void> {
         // if multiple entries to create
-        if (Array.isArray(key)){
+        if (Array.isArray(key)) {
             return key.map((setConfig) => {
                 return this.setEntry(setConfig.key, setConfig.value);
             });
@@ -125,31 +172,33 @@ export class Store<T = any> implements IStoreConfig<T> {
     /**
      * Get single or multiple entries
      * @param {StoreEntryKeySubstitute | StoreEntryKeySubstitute[]} key
+     * @param {number} position
      * @returns {void | Array<void | T> | T}
      */
     public get(
-        key: StoreEntryKeySubstitute | StoreEntryKeySubstitute[]
-    ): T | void | Array<T | void>{
+        key: StoreEntryKeySubstitute | StoreEntryKeySubstitute[],
+        position?: number
+    ): T | void | Array<T | void> {
         // if multiple entries to retrieve
-        if (Array.isArray(key)){
+        if (Array.isArray(key)) {
             return key.map((singleKey) => {
-                return this.getEntryValue(singleKey);
+                return this.getEntryValue(singleKey, position);
             });
         } else {
-            return this.getEntryValue(key);
+            return this.getEntryValue(key, position);
         }
     }
 
     /**
-     * Get position number
+     * Get current position in history stack
      * @param {StoreEntryKeySubstitute | StoreEntryKeySubstitute[]} key
      * @returns {void | Array<void | T> | T}
      */
     public position(
         key: StoreEntryKeySubstitute | StoreEntryKeySubstitute[]
-    ): number | void | Array<number | void>{
+    ): number | void | Array<number | void> {
         // if request to get step for multiple entries
-        if (Array.isArray(key)){
+        if (Array.isArray(key)) {
             return key.map((singleKey) => {
                 const entry = this.getEntry(singleKey);
                 return entry ? entry.currentPosition : undefined;
@@ -167,9 +216,9 @@ export class Store<T = any> implements IStoreConfig<T> {
      */
     public delete(
         key: StoreEntryKeySubstitute | StoreEntryKeySubstitute[]
-    ): T | void | Array<T | void>{
+    ): T | void | Array<T | void> {
         // if multiple entries to delete
-        if (Array.isArray(key)){
+        if (Array.isArray(key)) {
             return key.map((singleKey) => {
                 return this.deleteEntry(singleKey);
             });
@@ -183,12 +232,12 @@ export class Store<T = any> implements IStoreConfig<T> {
      * @param {StoreEntryKeyClass} key
      * @returns {boolean}
      */
-    protected entryExists(key: StoreEntryKeyClass): boolean{
+    protected entryExists(key: StoreEntryKeyClass): boolean {
         // if namespace and key to check
-        if (key.namespace && key.key){
+        if (key.namespace && key.key) {
             return !!(this.namespaceStore[key.namespace] &&
                 this.namespaceStore[key.namespace][key.key]);
-        } else if (key.namespace){
+        } else if (key.namespace) {
             // if only namespace to check
             return !!this.namespaceStore[key.namespace];
         } else {
@@ -204,11 +253,11 @@ export class Store<T = any> implements IStoreConfig<T> {
      */
     protected getPosition(
         key: StoreEntryKeySubstitute
-    ): number | void{
+    ): number | void {
         // retrieve entry
         const entry = this.getEntry(key);
 
-        if (!entry){
+        if (!entry) {
             return;
         }
 
@@ -224,15 +273,15 @@ export class Store<T = any> implements IStoreConfig<T> {
     protected setEntry(
         key: StoreEntryKeySubstitute,
         value?: T
-    ): StoreEntryKeyClass | void{
+    ): StoreEntryKeyClass | void {
         const keyObject = new StoreEntryKeyClass(key);
 
-        if (!keyObject.key){
+        if (!keyObject.key) {
             return;
         }
 
         // we don't pass undefined values to the store
-        if (typeof value === 'undefined'){
+        if (typeof value === 'undefined') {
             return;
         }
 
@@ -249,20 +298,20 @@ export class Store<T = any> implements IStoreConfig<T> {
      */
     protected getEntry(
         key: StoreEntryKeySubstitute
-    ): IStoreEntry<T> | void{
+    ): IStoreEntry<T> | void {
         const keyObject = new StoreEntryKeyClass(key);
 
-        if (!keyObject.key){
+        if (!keyObject.key) {
             return;
         }
 
-        if (!this.entryExists(keyObject)){
+        if (!this.entryExists(keyObject)) {
             return;
         }
 
         // retrieve entry
         let entry: IStoreEntry<T>;
-        if (keyObject.namespace){
+        if (keyObject.namespace) {
             entry = this.namespaceStore[keyObject.namespace][keyObject.key];
         } else {
             entry = this.store[keyObject.key];
@@ -272,19 +321,24 @@ export class Store<T = any> implements IStoreConfig<T> {
     }
 
     /**
-     *
      * Get single entry value
      * @param {StoreEntryKeySubstitute} key
+     * @param {number} position
      * @returns {void | T}
      */
     protected getEntryValue(
-        key: StoreEntryKeySubstitute
-    ): T | void{
+        key: StoreEntryKeySubstitute,
+        position?: number
+    ): T | void {
         // retrieve entry
         const entry = this.getEntry(key);
 
-        if (!entry){
+        if (!entry) {
             return;
+        }
+
+        if (typeof position === 'number') {
+            return entry.history[position];
         }
 
         return entry.history[entry.currentPosition];
@@ -297,14 +351,14 @@ export class Store<T = any> implements IStoreConfig<T> {
      */
     protected deleteEntry(
         key: StoreEntryKeySubstitute
-    ): T | void{
+    ): T | void {
         const keyObject = new StoreEntryKeyClass(key);
 
-        if (!keyObject.key){
+        if (!keyObject.key) {
             return;
         }
 
-        if (!this.entryExists(keyObject)){
+        if (!this.entryExists(keyObject)) {
             return;
         }
 
@@ -313,13 +367,13 @@ export class Store<T = any> implements IStoreConfig<T> {
         let value: T;
 
         // if entry in namespace
-        if (keyObject.namespace && keyObject.key){
+        if (keyObject.namespace && keyObject.key) {
             entry = this.namespaceStore[keyObject.namespace][keyObject.key];
             value = entry.history[entry.currentPosition];
 
             delete this.namespaceStore[keyObject.namespace][keyObject.key];
             return value;
-        } else if (keyObject.namespace){
+        } else if (keyObject.namespace) {
             // if only namespace provided
             delete this.namespaceStore[keyObject.namespace];
             return;
@@ -337,13 +391,13 @@ export class Store<T = any> implements IStoreConfig<T> {
      * @param {StoreEntryKeyClass} key
      * @param {any} value
      */
-    protected setOrUpdateEntry(key: StoreEntryKeyClass, value: T): void{
+    protected setOrUpdateEntry(key: StoreEntryKeyClass, value: T): void {
         // if entry does not exist in store
-        if (!this.entryExists(key)){
+        if (!this.entryExists(key)) {
             const entry = new StoreEntryClass<T>(value);
-            if (key.namespace){
+            if (key.namespace) {
                 // if namespace exist preserve its content
-                if (this.namespaceStore[key.namespace]){
+                if (this.namespaceStore[key.namespace]) {
                     this.namespaceStore[key.namespace][key.key] = entry;
                 } else {
                     // create new namespace entry
@@ -354,7 +408,7 @@ export class Store<T = any> implements IStoreConfig<T> {
             }
         } else {
             // if entry exist in store
-            if (key.namespace){
+            if (key.namespace) {
                 this.updateEntry(this.namespaceStore[key.namespace][key.key], value);
             } else {
                 this.updateEntry(this.store[key.key], value);
@@ -368,12 +422,12 @@ export class Store<T = any> implements IStoreConfig<T> {
      * @param {T} value
      * @return {number}
      */
-    protected updateEntry(entry: StoreEntryClass, value: T): void{
+    protected updateEntry(entry: StoreEntryClass, value: T): void {
         let outputHistory: any[];
         let currentPosition = 0;
 
         // If history enabled add to the history stack
-        if (this.keepHistory){
+        if (this.keepHistory) {
             const resolvedHistory = this.resolveHistory(entry, value);
             outputHistory = resolvedHistory.outputHistory;
             currentPosition = resolvedHistory.currentPosition;
@@ -393,7 +447,7 @@ export class Store<T = any> implements IStoreConfig<T> {
      * @param {T} value
      * @return {{outputHistory: any[]; currentPosition: number}}
      */
-    protected resolveHistory(entry: StoreEntryClass, value: T): { outputHistory: any[], currentPosition: number }{
+    protected resolveHistory(entry: StoreEntryClass, value: T): { outputHistory: any[], currentPosition: number } {
         const currentHistory = entry.history.slice();
         let outputHistory: any[];
         let currentPosition = entry.currentPosition;
@@ -403,7 +457,7 @@ export class Store<T = any> implements IStoreConfig<T> {
         if (
             this.keepForwardHistory &&
             (currentPosition + 1 < currentHistory.length)
-        ){
+        ) {
             // inject new value
             outputHistory = currentHistory.splice(entry.currentPosition, 0, value);
             currentPosition = currentPosition + 1;
@@ -415,7 +469,7 @@ export class Store<T = any> implements IStoreConfig<T> {
         }
 
         // if history over the limit
-        if (this.limitHistory && outputHistory.length > this.limitHistory){
+        if (this.limitHistory && outputHistory.length > this.limitHistory) {
             // remove old entry and adjust position
             outputHistory.shift();
             currentPosition = currentPosition - 1;

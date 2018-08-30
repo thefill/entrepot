@@ -184,7 +184,7 @@ describe('Store', () => {
 
                     const returnedKeys = store.set(sets) as Array<void | StoreEntryKeyClass>;
 
-                    if (returnedKeys){
+                    if (returnedKeys) {
                         returnedKeys.forEach((returnedKey) => {
                             expect(returnedKey instanceof StoreEntryKeyClass).toBeTruthy();
                         });
@@ -219,7 +219,7 @@ describe('Store', () => {
 
     });
 
-    describe('should retrieve values', () => {
+    describe('should retrieve values from current position', () => {
 
         describe('single entry value', () => {
 
@@ -275,9 +275,10 @@ describe('Store', () => {
                     });
 
                     store.set(sets);
+                    const keysToCheck = Object.keys(keyConfigs).map((keyLabel) => keyConfigs[keyLabel]);
 
-                    Object.keys(keyConfigs).forEach((keyLabel) => {
-                        const retrievedValue = store.get(keyConfigs[keyLabel]);
+                    const retrievedValues = store.get(keysToCheck);
+                    retrievedValues.forEach((retrievedValue) => {
                         expect(retrievedValue).toEqual(value);
                     });
                 });
@@ -302,6 +303,92 @@ describe('Store', () => {
                     ...objects
                 ];
                 assertMultipleRetrieval(mixedValues, keys);
+            });
+
+        });
+
+    });
+
+    describe('should retrieve values from specific position', () => {
+
+        describe('single entry value', () => {
+
+            // Local assertion callback
+            const assertRetrievalWithPosition = (key: StoreEntryKeySubstitute) => {
+                store = new Store();
+                for (let i = 0; i < 5; i++) {
+                    store.set(key, i);
+                }
+
+                for (let i = 0; i < 5; i++) {
+                    const retrievedValue = store.get(key, i);
+                    expect(retrievedValue).toEqual(i);
+                }
+            };
+
+            Object.keys(keys).forEach((keyLabel) => {
+
+                describe(`primitive value`, () => {
+                    it(`using ${keyLabel} as an identifier`, () => {
+                        assertRetrievalWithPosition(keys[keyLabel]);
+                    });
+                });
+
+                describe(`array value`, () => {
+                    it(`using ${keyLabel} as an identifier`, () => {
+                        assertRetrievalWithPosition(keys[keyLabel]);
+                    });
+                });
+
+                describe(`object value`, () => {
+                    it(`using ${keyLabel} as an identifier`, () => {
+                        assertRetrievalWithPosition(keys[keyLabel]);
+                    });
+                });
+            });
+
+        });
+
+        describe('multiple entries values', () => {
+
+            // Local assertion callback
+            const assertMultipleRetrievalWithPosition = (
+                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
+            ) => {
+                store = new Store();
+                for (let i = 0; i < 5; i++) {
+                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
+
+                    Object.keys(keyConfigs).forEach((keyLabel) => {
+                        sets.push({
+                            key: keyConfigs[keyLabel],
+                            value: i
+                        });
+                    });
+
+                    store.set(sets);
+                }
+
+                const keysToCheck = Object.keys(keyConfigs).map((keyLabel) => keyConfigs[keyLabel]);
+
+                for (let i = 0; i < 5; i++) {
+                    const retrievedValues = store.get(keysToCheck, i);
+                    retrievedValues.forEach((retrievedValue) => {
+                        expect(retrievedValue).toEqual(i);
+                    });
+                }
+            };
+
+            it(`with primitive values`, () => {
+                assertMultipleRetrievalWithPosition(keys);
+            });
+
+            it(`with array values`, () => {
+                assertMultipleRetrievalWithPosition(keys);
+            });
+
+            it(`with object values`, () => {
+                assertMultipleRetrievalWithPosition(keys);
             });
 
         });
@@ -474,9 +561,9 @@ describe('Store', () => {
                 store.reset(namespaceToReset);
 
                 Object.keys(keys).forEach((keyLabel) => {
-                    if (typeof keys[keyLabel] !== 'string'){
+                    if (typeof keys[keyLabel] !== 'string') {
                         const keyToCheck = keys[keyLabel] as IStoreEntryKeyConfig | StoreEntryKeyClass;
-                        if (keyToCheck.namespace === namespaceToReset){
+                        if (keyToCheck.namespace === namespaceToReset) {
                             expect(store.exists(keys[keyLabel])).toBeFalsy();
                         } else {
                             expect(store.exists(keys[keyLabel])).toBeTruthy();
@@ -636,7 +723,7 @@ describe('Store', () => {
 
                         const returnedPositions = store.position(keysToCheck) as number[];
 
-                        if (returnedPositions){
+                        if (returnedPositions) {
                             returnedPositions.forEach((position) => {
                                 expect(position).toEqual(i);
                             });
@@ -735,7 +822,7 @@ describe('Store', () => {
 
                         const returnedPositions = store.position(keysToCheck) as number[];
 
-                        if (returnedPositions){
+                        if (returnedPositions) {
                             // We expect to reach limit of entries so for limit 3 max position will be 2 (0-based index)
                             const expectedPosition = i < limit ? i : limit - 1;
 
@@ -839,7 +926,7 @@ describe('Store', () => {
 
                         const returnedPositions = store.position(keysToCheck) as number[];
 
-                        if (returnedPositions){
+                        if (returnedPositions) {
 
                             returnedPositions.forEach((position) => {
                                 expect(position).toEqual(0);
@@ -868,8 +955,177 @@ describe('Store', () => {
     });
 
     describe('should retrieve entry history', () => {
-        // TODO: implement
-        // public history(key: StoreEntryKeySubstitute): T[] | void {/**/
+
+        // Local assertion callback
+        const assertHistory = (values: any[], key: StoreEntryKeySubstitute) => {
+            values.forEach((value) => {
+                store = new Store();
+                for (let i = 0; i < 5; i++) {
+                    store.set(key, value);
+                    const history = store.history(key) as any[];
+                    expect(history.length).toEqual(i + 1);
+                    expect(history[i]).toEqual(value);
+                }
+            });
+        };
+
+        Object.keys(keys).forEach((keyLabel) => {
+            it(`using ${keyLabel} as an identifier`, () => {
+                // Local assertion callback
+                const mixedValues = [
+                    ...primitiveValues,
+                    ...arrays,
+                    ...objects
+                ];
+
+                assertHistory(mixedValues, keys[keyLabel]);
+            });
+        });
+    });
+
+    describe('should move back in entry history', () => {
+
+        describe('move back by default one step', () => {
+
+            Object.keys(keys).forEach((keyLabel) => {
+                describe(`using ${keyLabel} as an identifier`, () => {
+                    store = new Store();
+                    const key = keys[keyLabel];
+
+                    for (let i = 0; i < 5; i++) {
+                        store.set(key, i);
+                    }
+
+                    for (let i = 4; i >= 1; i--) {
+                        store.undo(key);
+                        expect(store.position(key)).toEqual(i - 1);
+                    }
+                });
+            });
+
+        });
+
+        describe('move back up to position 0', () => {
+
+            Object.keys(keys).forEach((keyLabel) => {
+                describe(`using ${keyLabel} as an identifier`, () => {
+                    store = new Store();
+                    const key = keys[keyLabel];
+
+                    for (let i = 0; i < 5; i++) {
+                        store.set(key, i);
+                    }
+
+                    for (let i = 4; i >= -5; i--) {
+                        store.undo(key);
+                        if (i > 0) {
+                            expect(store.position(key)).toEqual(i - 1);
+                        } else {
+                            expect(store.position(key)).toEqual(0);
+                        }
+                    }
+                });
+            });
+
+        });
+
+        describe('move back by custom number of steps', () => {
+
+            Object.keys(keys).forEach((keyLabel) => {
+                describe(`using ${keyLabel} as an identifier`, () => {
+                    const key = keys[keyLabel];
+
+                    for (let i = 1; i < 5; i++) {
+                        store = new Store();
+                        for (let j = 0; j < 5; j++) {
+                            store.set(key, j);
+                        }
+
+                        store.undo(key, i);
+                        expect(store.position(key)).toEqual(4 - i);
+                    }
+
+                });
+            });
+
+        });
+
+    });
+
+
+    describe('should move forward in entry history', () => {
+
+        describe('move forward by default one step', () => {
+
+            Object.keys(keys).forEach((keyLabel) => {
+                describe(`using ${keyLabel} as an identifier`, () => {
+                    store = new Store();
+                    const key = keys[keyLabel];
+
+                    for (let i = 0; i < 5; i++) {
+                        store.set(key, i);
+                    }
+
+                    store.undo(key, 4);
+
+                    for (let i = 0; i < 4; i++) {
+                        store.redo(key);
+                        expect(store.position(key)).toEqual(i + 1);
+                    }
+                });
+            });
+
+        });
+
+        describe('move forward up to last position', () => {
+
+            Object.keys(keys).forEach((keyLabel) => {
+                describe(`using ${keyLabel} as an identifier`, () => {
+                    store = new Store();
+                    const key = keys[keyLabel];
+
+                    for (let i = 0; i < 5; i++) {
+                        store.set(key, i);
+                    }
+
+                    store.undo(key, 4);
+
+                    for (let i = 0; i < 4; i++) {
+                        store.redo(key);
+                        if (i < (store.history(key) as any[]).length) {
+                            expect(store.position(key)).toEqual(i + 1);
+                        } else {
+                            expect(store.position(key)).toEqual((store.history(key) as any[]).length - 1);
+                        }
+                    }
+                });
+            });
+
+        });
+
+        describe('move forward by custom number of steps', () => {
+
+            Object.keys(keys).forEach((keyLabel) => {
+                describe(`using ${keyLabel} as an identifier`, () => {
+                    const key = keys[keyLabel];
+
+                    for (let i = 1; i < 5; i++) {
+                        store = new Store();
+                        for (let j = 0; j < 5; j++) {
+                            store.set(key, j);
+                        }
+
+                        store.undo(key, 4);
+
+                        store.redo(key, i);
+                        expect(store.position(key)).toEqual(i);
+                    }
+
+                });
+            });
+
+        });
+
     });
 
     describe('should handle non-linear history', () => {
@@ -904,7 +1160,7 @@ describe('Store', () => {
                     const historyLength = 10;
                     const positionToMoveTo = 5;
                     const expectedHistoryLength = historyLength + 1;
-                    if (keepForwardHistory){
+                    if (keepForwardHistory) {
 
                     }
 
@@ -981,7 +1237,7 @@ describe('Store', () => {
 
                         const returnedPositions = store.position(keysToCheck) as number[];
 
-                        if (returnedPositions){
+                        if (returnedPositions) {
                             returnedPositions.forEach((position) => {
                                 expect(position).toEqual(i);
                             });
