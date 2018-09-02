@@ -16,6 +16,7 @@ import {
 export class Store<T = any> implements IStoreConfig<T> {
     // TODO: introduce find and findAll functions that accepts callback or value to seek + optional namespace
     // ---
+    // TODO: split store into smaller modules, merge via composition
     // TODO: emit change
     // TODO: emit changes from single entry?? (nope - events enum + passed entry)
     // TODO: introduce worker store!! ;-D (separate class that spawns store as a worker and communicate with it)
