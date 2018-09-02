@@ -12,39 +12,55 @@ describe('Utils', () => {
     });
 
     describe('should not change values of', () => {
+
         it('primitive values', () => {
             primitiveValues.forEach((value) => {
                 const processed = UtilsClass.decoupleValue(value);
                 expect(processed).toEqual(value);
             });
         });
+
         it('arrays with values', () => {
             arrays.forEach((value) => {
                 const processed = UtilsClass.decoupleValue(value);
                 expect(processed).toEqual(value);
             });
         });
+
         it('objects', () => {
             objects.forEach((value) => {
                 const processed = UtilsClass.decoupleValue(value);
                 expect(processed).toEqual(value);
             });
         });
+
     });
+
     describe('should decauple', () => {
+
         it('arrays with values', () => {
             arrays.forEach((value) => {
                 const processed = UtilsClass.decoupleValue(value);
                 expect(processed === value).not.toBeTruthy();
             });
         });
+
         it('objects', () => {
             objects.forEach((value) => {
                 const processed = UtilsClass.decoupleValue(value);
                 expect(processed === value).not.toBeTruthy();
             });
         });
+
     });
+
+    it('should clone objects', () => {
+        objects.forEach((value) => {
+            const processed = UtilsClass.deepClone(value);
+            expect(processed === value).not.toBeTruthy();
+        });
+    });
+    
 });
 
 /**

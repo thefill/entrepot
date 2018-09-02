@@ -6,6 +6,7 @@ import {
     IInternalStore,
     IStoreConfig,
     IStoreEntry,
+    IStoreSnapshot,
     StoreEntryKeySubstitute
 } from './store.interface';
 
@@ -19,7 +20,6 @@ export class Store<T = any> implements IStoreConfig<T> {
     // TODO: emit changes from single entry?? (nope - events enum + passed entry)
     // TODO: introduce worker store!! ;-D (separate class that spawns store as a worker and communicate with it)
     // TODO: automatic docs via http://typedoc.org/guides/doccomments/
-    // TODO: get store snapshot not whole store: {namespace: {key: value}...}
     // TODO: add benchmark of read/write to the tests
 
     // history enabled, by default enabled
@@ -64,6 +64,26 @@ export class Store<T = any> implements IStoreConfig<T> {
         }
 
         return entry.history.slice();
+    }
+
+    /**
+     * Returns whole store snapshot
+     * @returns {IStoreSnapshot<T>}
+     */
+    public snapshot(): IStoreSnapshot<T> {
+        const namespaceStore: IInternalNamespaceStore<T> = {};
+        const store: IInternalStore<T> = this.getStoreSnapshot(this.store);
+
+        Object.keys(this.namespaceStore).forEach((namespaceStoreKey) => {
+            namespaceStore[namespaceStoreKey] = this.getStoreSnapshot(
+                this.namespaceStore[namespaceStoreKey]
+            );
+        });
+
+        return {
+            namespaceStore: namespaceStore,
+            store: store
+        };
     }
 
     /**
@@ -225,6 +245,25 @@ export class Store<T = any> implements IStoreConfig<T> {
         } else {
             return this.deleteEntry(key);
         }
+    }
+
+    /**
+     * Get single store snapshot
+     * @param {IInternalStore<T>} originalStore
+     * @returns {IInternalStore<T>}
+     */
+    protected getStoreSnapshot(originalStore: IInternalStore<T>): IInternalStore<T> {
+
+        const singleStore: IInternalStore<T> = {};
+
+        Object.keys(originalStore).forEach((storeKey) => {
+            singleStore[storeKey] = {
+                currentPosition: originalStore[storeKey].currentPosition,
+                history: UtilsClass.decoupleValue(originalStore[storeKey].history)
+            };
+        });
+
+        return singleStore;
     }
 
     /**
@@ -459,7 +498,8 @@ export class Store<T = any> implements IStoreConfig<T> {
             (currentPosition + 1 < currentHistory.length)
         ) {
             // inject new value
-            outputHistory = currentHistory.splice(entry.currentPosition, 0, value);
+            currentHistory.splice(entry.currentPosition, 0, value);
+            outputHistory = currentHistory;
             currentPosition = currentPosition + 1;
         } else {
             // if current step not the last index all of history all entries past this point are removed

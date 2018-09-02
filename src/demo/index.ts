@@ -150,7 +150,7 @@ class DemoModule {
     }
 
     protected updateStoreSnapshot(){
-        const snapshot = JSON.stringify(this.store, undefined, 4);
+        const snapshot = JSON.stringify(this.store.snapshot(), undefined, 4);
         this.storeSnapshot.innerHTML = DemoModule.syntaxHighlight(snapshot);
     }
 }

@@ -1,6 +1,12 @@
 import {StoreEntryKeyClass} from '../store-entry-key';
 import {generateTestValues} from '../utils/utils.spec';
-import {IStoreConfig, IStoreEntryKeyConfig, StoreEntryKeySubstitute} from './store.interface';
+import {
+    IStoreConfig,
+    IStoreEntry,
+    IStoreEntryKeyConfig,
+    IStoreSnapshot,
+    StoreEntryKeySubstitute
+} from './store.interface';
 import {Store} from './store.module';
 
 describe('Store', () => {
@@ -1052,7 +1058,6 @@ describe('Store', () => {
 
     });
 
-
     describe('should move forward in entry history', () => {
 
         describe('move forward by default one step', () => {
@@ -1144,7 +1149,7 @@ describe('Store', () => {
 
         // TODO: implement moving in history first
 
-        xdescribe('for single entry', () => {
+        describe('for single entry', () => {
 
             // Local assertion callback
             const assertNonLinearHistory = (
@@ -1158,16 +1163,30 @@ describe('Store', () => {
                     });
 
                     const historyLength = 10;
-                    const positionToMoveTo = 5;
-                    const expectedHistoryLength = historyLength + 1;
-                    if (keepForwardHistory) {
 
+                    const positionToMoveTo = 5;
+                    // for non-linear history we expect insert of new value
+                    // and to keep forward history untouched
+                    let expectedHistoryLength = historyLength + 1;
+                    if (!keepForwardHistory) {
+                        // if linear history we just add new value and remove forward
+                        // history entries
+                        expectedHistoryLength = positionToMoveTo + 1;
                     }
 
-                    for (let i = 0; i < historyLength - 1; i++) {
+                    for (let i = 0; i < historyLength; i++) {
                         store.set(key, value);
                     }
 
+                    // move in history to the middle of history stack
+                    store.undo(key, positionToMoveTo);
+                    expect(store.position(key)).toEqual(positionToMoveTo - 1);
+
+                    // set new value, value unique
+                    store.set(key, historyLength + 1);
+
+                    expect(store.position(key)).toEqual(positionToMoveTo);
+                    expect((store.history(key) as any[]).length).toEqual(expectedHistoryLength);
                 });
             };
 
@@ -1207,7 +1226,7 @@ describe('Store', () => {
 
         });
 
-        xdescribe('for multiple entries', () => {
+        describe('for multiple entries', () => {
 
             // Local assertion callback
             const assertMultipleNonLinearHistory = (
@@ -1232,23 +1251,37 @@ describe('Store', () => {
                         return set.key;
                     });
 
-                    for (let i = 0; i < 5; i++) {
-                        store.set(sets);
+                    const historyLength = 10;
 
-                        const returnedPositions = store.position(keysToCheck) as number[];
-
-                        if (returnedPositions) {
-                            returnedPositions.forEach((position) => {
-                                expect(position).toEqual(i);
-                            });
-                        } else {
-                            expect(Array.isArray(returnedPositions)).toBeTruthy();
-                        }
+                    const positionToMoveTo = 5;
+                    // for non-linear history we expect insert of new value
+                    // and to keep forward history untouched
+                    let expectedHistoryLength = historyLength + 1;
+                    if (!keepForwardHistory) {
+                        // if linear history we just add new value and remove forward
+                        // history entries
+                        expectedHistoryLength = positionToMoveTo + 1;
                     }
+
+                    for (let i = 0; i < historyLength; i++) {
+                        store.set(sets);
+                    }
+
+                    keysToCheck.forEach((key) => {
+                        // move in history to the middle of history stack
+                        store.undo(key, positionToMoveTo);
+                        expect(store.position(key)).toEqual(positionToMoveTo - 1);
+
+                        // set new value, value unique
+                        store.set(key, historyLength + 1);
+
+                        expect(store.position(key)).toEqual(positionToMoveTo);
+                        expect((store.history(key) as any[]).length).toEqual(expectedHistoryLength);
+                    });
                 });
             };
 
-            xdescribe('if non-linear history enabled', () => {
+            describe('if non-linear history enabled', () => {
 
                 it(`using various key types as an identifier`, () => {
                     const mixedValues = [
@@ -1256,12 +1289,12 @@ describe('Store', () => {
                         ...arrays,
                         ...objects
                     ];
-                    assertMultipleNonLinearHistory(mixedValues, keys);
+                    assertMultipleNonLinearHistory(mixedValues, keys, true);
                 });
 
             });
 
-            xdescribe('if non-linear history disabled', () => {
+            describe('if non-linear history disabled', () => {
 
                 it(`using various key types as an identifier`, () => {
                     const mixedValues = [
@@ -1269,11 +1302,74 @@ describe('Store', () => {
                         ...arrays,
                         ...objects
                     ];
-                    assertMultipleNonLinearHistory(mixedValues, keys);
+                    assertMultipleNonLinearHistory(mixedValues, keys, false);
                 });
 
             });
+
         });
 
+    });
+
+    describe('should produce snapshot', () => {
+        it('should produce snapshot of value store and namespace store', () => {
+
+            // Local assertion callback
+            const assertSnapshot = (
+                values: any[],
+                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute },
+            ) => {
+                values.forEach((value) => {
+                    store = new Store();
+                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
+
+                    Object.keys(keyConfigs).forEach((keyLabel) => {
+                        sets.push({
+                            key: keyConfigs[keyLabel],
+                            value: value
+                        });
+                    });
+
+                    const keysToCheck = sets.map((set) => {
+                        return set.key;
+                    });
+
+
+                    for (let i = 0; i < 5; i++) {
+                        store.set(sets);
+                    }
+
+                    const snapshot = store.snapshot();
+
+                    expect(snapshot.namespaceStore).toBeTruthy();
+                    expect(snapshot.store).toBeTruthy();
+
+                    keysToCheck.forEach((key) => {
+                        key = new StoreEntryKeyClass(key);
+                        let snapshotEntry: IStoreEntry<any>;
+                        if (key.namespace) {
+                            snapshotEntry = snapshot.namespaceStore[key.namespace][key.key];
+                        } else {
+                            snapshotEntry = snapshot.store[key.key];
+                        }
+
+                        expect(snapshotEntry.currentPosition).toEqual(4);
+                        expect(snapshotEntry.history.length).toEqual(5);
+
+                        snapshotEntry.history.forEach((historyValue) => {
+                           expect(historyValue).toEqual(value);
+                        });
+
+                    });
+                });
+            };
+
+            const mixedValues = [
+                ...primitiveValues,
+                ...arrays,
+                ...objects
+            ];
+            assertSnapshot(mixedValues, keys);
+        });
     });
 });

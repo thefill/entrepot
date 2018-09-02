@@ -64,3 +64,11 @@ export interface IInternalStore<T> {
 export interface IInternalNamespaceStore<T> {
     [namespace: string]: { [key: string]: IStoreEntry<T> };
 }
+
+/**
+ * Snapshot of the whole store state - includes namespaces and single values
+ */
+export interface IStoreSnapshot<T> {
+    namespaceStore: IInternalNamespaceStore<T>;
+    store: IInternalStore<T>;
+}
