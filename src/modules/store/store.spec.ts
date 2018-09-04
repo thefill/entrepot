@@ -1,12 +1,6 @@
 import {StoreEntryKeyClass} from '../store-entry-key';
 import {generateTestValues} from '../utils/utils.spec';
-import {
-    IStoreConfig,
-    IStoreEntry,
-    IStoreEntryKeyConfig,
-    IStoreSnapshot,
-    StoreEntryKeySubstitute
-} from './store.interface';
+import {IStoreConfig, IStoreEntry, IStoreEntryKeyConfig, StoreEntryKeySubstitute} from './store.interface';
 import {Store} from './store.module';
 
 describe('Store', () => {
@@ -190,7 +184,7 @@ describe('Store', () => {
 
                     const returnedKeys = store.set(sets) as Array<void | StoreEntryKeyClass>;
 
-                    if (returnedKeys) {
+                    if (returnedKeys){
                         returnedKeys.forEach((returnedKey) => {
                             expect(returnedKey instanceof StoreEntryKeyClass).toBeTruthy();
                         });
@@ -567,9 +561,9 @@ describe('Store', () => {
                 store.reset(namespaceToReset);
 
                 Object.keys(keys).forEach((keyLabel) => {
-                    if (typeof keys[keyLabel] !== 'string') {
+                    if (typeof keys[keyLabel] !== 'string'){
                         const keyToCheck = keys[keyLabel] as IStoreEntryKeyConfig | StoreEntryKeyClass;
-                        if (keyToCheck.namespace === namespaceToReset) {
+                        if (keyToCheck.namespace === namespaceToReset){
                             expect(store.exists(keys[keyLabel])).toBeFalsy();
                         } else {
                             expect(store.exists(keys[keyLabel])).toBeTruthy();
@@ -729,7 +723,7 @@ describe('Store', () => {
 
                         const returnedPositions = store.position(keysToCheck) as number[];
 
-                        if (returnedPositions) {
+                        if (returnedPositions){
                             returnedPositions.forEach((position) => {
                                 expect(position).toEqual(i);
                             });
@@ -828,7 +822,7 @@ describe('Store', () => {
 
                         const returnedPositions = store.position(keysToCheck) as number[];
 
-                        if (returnedPositions) {
+                        if (returnedPositions){
                             // We expect to reach limit of entries so for limit 3 max position will be 2 (0-based index)
                             const expectedPosition = i < limit ? i : limit - 1;
 
@@ -932,7 +926,7 @@ describe('Store', () => {
 
                         const returnedPositions = store.position(keysToCheck) as number[];
 
-                        if (returnedPositions) {
+                        if (returnedPositions){
 
                             returnedPositions.forEach((position) => {
                                 expect(position).toEqual(0);
@@ -1024,7 +1018,7 @@ describe('Store', () => {
 
                     for (let i = 4; i >= -5; i--) {
                         store.undo(key);
-                        if (i > 0) {
+                        if (i > 0){
                             expect(store.position(key)).toEqual(i - 1);
                         } else {
                             expect(store.position(key)).toEqual(0);
@@ -1097,7 +1091,7 @@ describe('Store', () => {
 
                     for (let i = 0; i < 4; i++) {
                         store.redo(key);
-                        if (i < (store.history(key) as any[]).length) {
+                        if (i < (store.history(key) as any[]).length){
                             expect(store.position(key)).toEqual(i + 1);
                         } else {
                             expect(store.position(key)).toEqual((store.history(key) as any[]).length - 1);
@@ -1147,8 +1141,6 @@ describe('Store', () => {
             expect(store.keepForwardHistory).toBeTruthy();
         });
 
-        // TODO: implement moving in history first
-
         describe('for single entry', () => {
 
             // Local assertion callback
@@ -1168,7 +1160,7 @@ describe('Store', () => {
                     // for non-linear history we expect insert of new value
                     // and to keep forward history untouched
                     let expectedHistoryLength = historyLength + 1;
-                    if (!keepForwardHistory) {
+                    if (!keepForwardHistory){
                         // if linear history we just add new value and remove forward
                         // history entries
                         expectedHistoryLength = positionToMoveTo + 1;
@@ -1257,7 +1249,7 @@ describe('Store', () => {
                     // for non-linear history we expect insert of new value
                     // and to keep forward history untouched
                     let expectedHistoryLength = historyLength + 1;
-                    if (!keepForwardHistory) {
+                    if (!keepForwardHistory){
                         // if linear history we just add new value and remove forward
                         // history entries
                         expectedHistoryLength = positionToMoveTo + 1;
@@ -1317,7 +1309,7 @@ describe('Store', () => {
             // Local assertion callback
             const assertSnapshot = (
                 values: any[],
-                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute },
+                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
             ) => {
                 values.forEach((value) => {
                     store = new Store();
@@ -1334,7 +1326,6 @@ describe('Store', () => {
                         return set.key;
                     });
 
-
                     for (let i = 0; i < 5; i++) {
                         store.set(sets);
                     }
@@ -1347,7 +1338,7 @@ describe('Store', () => {
                     keysToCheck.forEach((key) => {
                         key = new StoreEntryKeyClass(key);
                         let snapshotEntry: IStoreEntry<any>;
-                        if (key.namespace) {
+                        if (key.namespace){
                             snapshotEntry = snapshot.namespaceStore[key.namespace][key.key];
                         } else {
                             snapshotEntry = snapshot.store[key.key];
@@ -1357,7 +1348,7 @@ describe('Store', () => {
                         expect(snapshotEntry.history.length).toEqual(5);
 
                         snapshotEntry.history.forEach((historyValue) => {
-                           expect(historyValue).toEqual(value);
+                            expect(historyValue).toEqual(value);
                         });
 
                     });

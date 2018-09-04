@@ -39,8 +39,10 @@
         }
     },
     "devDependencies": {
+        "@types/benchmark": "^1.0.31",
         "@types/jest": "^23.3.1",
         "@types/node": "^6.0.0",
+        "benchmark": "^2.1.4",
         "gh-pages": "^1.1.0",
         "http-server": "^0.11.1",
         "husky": "^0.14.3",
