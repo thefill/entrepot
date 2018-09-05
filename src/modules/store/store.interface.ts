@@ -21,11 +21,6 @@ export interface IStoreConfig<T = any> {
     //  - if keepForwardHistory true we will put new value after position 5 (11 records left)
     //  - if keepForwardHistory false we will put new value after position 5 and remove other records (7 records left)
     keepForwardHistory?: boolean;
-
-    // TODO: implement: Schema: json schema
-    // TODO: implement: persistTime: number
-    // TODO: implement: debounceEmit
-
 }
 
 /**
