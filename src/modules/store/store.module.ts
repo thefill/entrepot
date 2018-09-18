@@ -16,10 +16,13 @@ import {
 export class Store<T = any> implements IStoreConfig<T> {
     // TODO: introduce find and findAll functions that accepts callback or value to seek + optional namespace
     // TODO: implement: Schema: json schema
-    // TODO: implement: persistTime: number
     // TODO: emit change (using store-emitter)
     // TODO: implement: debounceEmit
+    // TODO: implement: filter
+    // TODO: implement: map
+    // TODO: implement: forEach
     // ---
+    // TODO: implement: persistTime: number
     // TODO: split store into smaller modules, merge via composition
     // TODO: introduce worker store!! ;-D (separate class that spawns store as a worker and communicate with it)
     // TODO: automatic docs via http://typedoc.org/guides/doccomments/
