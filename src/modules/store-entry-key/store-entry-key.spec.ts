@@ -32,7 +32,7 @@ describe('Store entry key', () => {
         configs.forEach((config) => {
             try {
                 const key = new StoreEntryKeyClass(config);
-            } catch (error){
+            } catch (error) {
                 expect(error).toBeTruthy();
             }
         });
@@ -49,7 +49,7 @@ describe('Store entry key', () => {
 
             expect(key.key).toEqual(typeof config === 'string' ? config : config.key);
 
-            if (typeof config !== 'string' && config.namespace){
+            if (typeof config !== 'string' && config.namespace) {
                 expect(key.namespace).toEqual(config.namespace);
             }
         });

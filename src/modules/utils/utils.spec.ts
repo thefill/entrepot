@@ -60,7 +60,49 @@ describe('Utils', () => {
             expect(processed === value).not.toBeTruthy();
         });
     });
-    
+
+    it('should mix classes', () => {
+        abstract class ClassA {
+            public staticMethodA: string;
+            public methodA() {
+                return 'valueA';
+            }
+        }
+
+        // tslint:disable-next-line
+        abstract class ClassB {
+            public staticMethodB: string;
+            public methodB() {
+                return 'valueB';
+            }
+        }
+
+        // tslint:disable-next-line
+        class ClassC implements ClassA, ClassB {
+            public staticMethodA;
+            public staticMethodB;
+            public methodA: () => string;
+            public methodB: () => string;
+
+            constructor(){
+                this.staticMethodA = 'staticValueA';
+                this.staticMethodB = 'staticValueB';
+            }
+        }
+        UtilsClass.mixin(ClassC, [ClassA, ClassB]);
+
+        const newObjectC = new ClassC();
+        expect(newObjectC.methodA).toBeDefined();
+        expect(newObjectC.methodB).toBeDefined();
+        expect(newObjectC.staticMethodA).toBeDefined();
+        expect(newObjectC.staticMethodB).toBeDefined();
+
+        expect(newObjectC.methodA()).toEqual('valueA');
+        expect(newObjectC.methodB()).toEqual('valueB');
+        expect(newObjectC.staticMethodA).toEqual('staticValueA');
+        expect(newObjectC.staticMethodB).toEqual('staticValueB');
+    });
+
 });
 
 /**

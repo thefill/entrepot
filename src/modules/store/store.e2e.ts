@@ -1,8 +1,4 @@
 import * as Benchmark from 'benchmark';
-import {StoreEntryKeyClass} from '../store-entry-key';
-import {generateTestValues} from '../utils/utils.spec';
-import {IStoreConfig, IStoreEntry, IStoreEntryKeyConfig, StoreEntryKeySubstitute} from './store.interface';
-import {Store} from './store.module';
 
 xdescribe('Speed', () => {
     // TODO: implement benchmark
@@ -13,8 +9,8 @@ xdescribe('Speed', () => {
                 const suite = new Benchmark.Suite();
                 console.log('start');
                 suite.add('RegExp#test', () => {
-                        const a = /o/.test('Hello World!');
-                    })
+                    const a = /o/.test('Hello World!');
+                })
                     .add('String#indexOf', () => {
                         const a = 'Hello World!'.indexOf('o') > -1;
                     })

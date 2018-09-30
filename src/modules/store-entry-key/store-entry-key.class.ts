@@ -1,9 +1,9 @@
-import {IStoreEntryKeyConfig} from "../store";
+import {IStoreEntryKeyConfig} from '../store';
 
 /**
  * Represents key for the store entry
  */
-export class StoreEntryKeyClass implements IStoreEntryKeyConfig{
+export class StoreEntryKeyClass implements IStoreEntryKeyConfig {
     // Entry namespace key
     public namespace: string;
     // Entry key
@@ -17,30 +17,30 @@ export class StoreEntryKeyClass implements IStoreEntryKeyConfig{
      * Create key
      * @param {string | IStoreEntryKeyConfig | StoreEntryKeyClass} key
      */
-    constructor(key?: string | IStoreEntryKeyConfig | StoreEntryKeyClass){
+    constructor(key?: string | IStoreEntryKeyConfig | StoreEntryKeyClass) {
         // if no values
-        if (!key){
+        if (!key) {
             return;
         }
 
         // if key object passed - don't create again
-        if (key instanceof StoreEntryKeyClass){
+        if (key instanceof StoreEntryKeyClass) {
             Object.assign(this, key);
             return;
         }
 
         // if not key config
-        if (typeof key === "string"){
+        if (typeof key === 'string') {
             this.key = key;
             return;
-        } else if (key.key){
+        } else if (key.key) {
             this.key = key.key;
 
-            if (key.namespace){
+            if (key.namespace) {
                 this.namespace = key.namespace;
             }
             return;
-        } else if (key.namespace){
+        } else if (key.namespace) {
             // if namespace without key
             throw new Error('You can\'t create key entry with only namespace value');
         }

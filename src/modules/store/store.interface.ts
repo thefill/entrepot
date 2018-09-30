@@ -1,5 +1,4 @@
-import {StoreEntryKeyClass} from "../store-entry-key";
-
+import {StoreEntryKeyClass} from '../store-entry-key';
 
 /**
  * Values used for store initial hydration

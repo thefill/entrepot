@@ -1,12 +1,11 @@
 export {Store} from './store.module';
-export {StoreEntryKeyClass} from '../store-entry-key/store-entry-key.class';
-export {StoreEntryClass} from '../store-entry/store-entry.class';
 export {
-    StoreEntryKeySubstitute,
+    IStoreEntry,
+    initialValues,
     IInternalNamespaceStore,
     IInternalStore,
-    IStoreEntry,
+    IStoreConfig,
     IStoreEntryKeyConfig,
-    initialValues,
-    IStoreConfig
-}from './store.interface';
+    IStoreSnapshot,
+    StoreEntryKeySubstitute
+} from './store.interface';

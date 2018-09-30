@@ -14,13 +14,17 @@ import {
  * Main store class
  */
 export class Store<T = any> implements IStoreConfig<T> {
+    // TODO: implement: filter
+    // TODO: implement: map
+    // TODO: implement: forEach
     // TODO: introduce find and findAll functions that accepts callback or value to seek + optional namespace
     // TODO: implement: Schema: json schema
     // TODO: emit change (using store-emitter)
     // TODO: implement: debounceEmit
-    // TODO: implement: filter
-    // TODO: implement: map
-    // TODO: implement: forEach
+    // TODO: use .on as sideeffects - when something happen fire
+    // TODO: create global history - timeline that keeps chronological record of changes
+    // across values
+    // TODO: add option to backup timeline to browser storage to recreate steps
     // ---
     // TODO: implement: persistTime: number
     // TODO: split store into smaller modules, merge via composition
@@ -292,24 +296,6 @@ export class Store<T = any> implements IStoreConfig<T> {
     }
 
     /**
-     * Get single entry current position
-     * @param {string | IStoreEntryKeyConfig | StoreEntryKeyClass} key
-     * @returns {IStoreEntry | {[p: string]: IStoreEntry}}
-     */
-    protected getPosition(
-        key: StoreEntryKeySubstitute
-    ): number | void {
-        // retrieve entry
-        const entry = this.getEntry(key);
-
-        if (!entry) {
-            return;
-        }
-
-        return entry.currentPosition;
-    }
-
-    /**
      * Set single entry
      * @param {StoreEntryKeySubstitute} key
      * @param {T} value
@@ -484,6 +470,24 @@ export class Store<T = any> implements IStoreConfig<T> {
 
         entry.history = outputHistory;
         entry.currentPosition = currentPosition;
+    }
+
+    /**
+     * Get single entry current position
+     * @param {string | IStoreEntryKeyConfig | StoreEntryKeyClass} key
+     * @returns {IStoreEntry | {[p: string]: IStoreEntry}}
+     */
+    protected getPosition(
+        key: StoreEntryKeySubstitute
+    ): number | void {
+        // retrieve entry
+        const entry = this.getEntry(key);
+
+        if (!entry) {
+            return;
+        }
+
+        return entry.currentPosition;
     }
 
     /**
