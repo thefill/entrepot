@@ -14,6 +14,8 @@ import {
  * Main store class
  */
 export class Store<T = any> implements IStoreConfig<T> {
+    // TODO: separate history from store by introducing separate update / delete commands
+    // for history e.g. updateHistoricalEntry
     // TODO: implement: filter
     // TODO: implement: map
     // TODO: implement: forEach
@@ -31,6 +33,7 @@ export class Store<T = any> implements IStoreConfig<T> {
     // TODO: introduce worker store!! ;-D (separate class that spawns store as a worker and communicate with it)
     // TODO: automatic docs via http://typedoc.org/guides/doccomments/
     // TODO: add benchmark of read/write to the tests
+    // TODO: add namespace to ts exports
 
     // history enabled, by default enabled
     public readonly keepHistory = true;
