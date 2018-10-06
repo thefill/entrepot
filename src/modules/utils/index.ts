@@ -1,1 +1,2 @@
-export {UtilsClass} from './utils.class';
+export {Utils} from './utils';
+export {testKeys, generateTestValues} from './spec-utils';

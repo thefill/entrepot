@@ -1,14 +1,7 @@
 /**
- * A little helper for TSC to understand whats going on...
- */
-interface IConstructor<T> {
-    new(...args: any[]): T;
-}
-
-/**
  * Various utils
  */
-export class UtilsClass {
+export class Utils {
     /**
      * Separate values from their references
      * @param {any} value
@@ -22,7 +15,7 @@ export class UtilsClass {
         if (Array.isArray(value)) {
             return value.slice();
         } else if (typeof value === 'object') {
-            return UtilsClass.deepClone(value);
+            return Utils.deepClone(value);
         }
 
         return value;
@@ -77,7 +70,7 @@ export class UtilsClass {
      *            this.staticMethodB = 'staticValueB';
      *        }
      *    }
-     * UtilsClass.mixin(ClassC, [ClassA, ClassB]);
+     * Utils.mixin(ClassC, [ClassA, ClassB]);
      *
      * const newObjectC = new ClassC();
      */

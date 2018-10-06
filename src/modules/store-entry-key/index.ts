@@ -1,1 +1,2 @@
-export {StoreEntryKeyClass} from './store-entry-key.class';
+export {StoreEntryKey} from './store-entry-key';
+export {StoreEntryKeySubstitute, IStoreEntryKeyConfig} from './store-entry-key.interface';

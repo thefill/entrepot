@@ -1,9 +1,9 @@
-import {IStoreEntryKeyConfig} from '../store';
-
 /**
- * Represents key for the store entry
+ * Represents key for the base-store entry
  */
-export class StoreEntryKeyClass implements IStoreEntryKeyConfig {
+import {IStoreEntryKeyConfig} from './store-entry-key.interface';
+
+export class StoreEntryKey implements IStoreEntryKeyConfig {
     // Entry namespace key
     public namespace: string;
     // Entry key
@@ -15,16 +15,16 @@ export class StoreEntryKeyClass implements IStoreEntryKeyConfig {
 
     /**
      * Create key
-     * @param {string | IStoreEntryKeyConfig | StoreEntryKeyClass} key
+     * @param {string | IStoreEntryKeyConfig | StoreEntryKey} key
      */
-    constructor(key?: string | IStoreEntryKeyConfig | StoreEntryKeyClass) {
+    constructor(key?: string | IStoreEntryKeyConfig | StoreEntryKey) {
         // if no values
         if (!key) {
             return;
         }
 
         // if key object passed - don't create again
-        if (key instanceof StoreEntryKeyClass) {
+        if (key instanceof StoreEntryKey) {
             Object.assign(this, key);
             return;
         }

@@ -1,312 +1,20 @@
-import {StoreEntryKeyClass} from '../store-entry-key/index';
-import {generateTestValues} from '../utils/utils.spec';
-import {IStoreConfig, IStoreEntry, IStoreEntryKeyConfig, StoreEntryKeySubstitute} from './store.interface';
-import {Store} from './store.module';
+import {HistoryStore} from './history-store';
+import {StoreEntryKeySubstitute} from '../store-entry-key';
+import {generateTestValues, testKeys} from '../utils';
 
-describe('Store base module', () => {
-    let store: Store;
+describe('HistoryStore', () => {
+    let store: HistoryStore;
     let primitiveValues: Array<string | number>;
     let arrays: Array<Array<string | number | Array<string | number> | object>>;
     let objects: object[];
 
-    const keys: { [keyLabel: string]: StoreEntryKeySubstitute } = {
-        'string': 'someKey',
-        'config object with key': {
-            key: 'someKey2'
-        },
-        'config object with key and namespace': {
-            namespace: 'someNamespace',
-            key: 'someKey3'
-        },
-        'config object with string key and existing namespace': {
-            namespace: 'someNamespace',
-            key: 'someKey4'
-        },
-        'key object with string default value': new StoreEntryKeyClass('someKey5'),
-        'key object with key': new StoreEntryKeyClass({key: 'someKey6'}),
-        'key object with key and namespace': new StoreEntryKeyClass(({
-            namespace: 'someNamespace2',
-            key: 'someKey7'
-        })),
-        'key object with key and existing namespace': new StoreEntryKeyClass(({
-            namespace: 'someNamespace2',
-            key: 'someKey8'
-        }))
-    };
+    const keys: { [keyLabel: string]: StoreEntryKeySubstitute } = testKeys;
 
     beforeEach(() => {
-        store = new Store();
+        store = new HistoryStore();
         primitiveValues = generateTestValues('primitive');
         arrays = generateTestValues('array');
         objects = generateTestValues('object');
-    });
-
-    describe('should add', () => {
-
-        describe('single entry', () => {
-
-            // Local assertion callback
-            const assertExist = (values: any[], key: StoreEntryKeySubstitute) => {
-                values.forEach((value) => {
-                    store = new Store();
-                    store.set(key, value);
-                    expect(store.exists(key)).toBeTruthy();
-                });
-            };
-
-            Object.keys(keys).forEach((keyLabel) => {
-                describe(`with primitive value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertExist(primitiveValues, keys[keyLabel]);
-                    });
-                });
-
-                describe(`with array value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertExist(arrays, keys[keyLabel]);
-                    });
-                });
-
-                describe(`with object value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertExist(objects, keys[keyLabel]);
-                    });
-                });
-
-            });
-        });
-
-        describe('multiple entries', () => {
-
-            // Local assertion callback
-            const assertMultipleExist = (
-                values: any[],
-                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
-            ) => {
-                values.forEach((value) => {
-                    store = new Store();
-                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
-
-                    Object.keys(keyConfigs).forEach((keyLabel) => {
-                        sets.push({
-                            key: keyConfigs[keyLabel],
-                            value: value
-                        });
-                    });
-
-                    store.set(sets);
-
-                    Object.keys(keyConfigs).forEach((keyLabel) => {
-                        expect(store.exists(keyConfigs[keyLabel])).toBeTruthy();
-                    });
-                });
-            };
-
-            it(`with primitive values`, () => {
-                assertMultipleExist(primitiveValues, keys);
-            });
-
-            it(`with array values`, () => {
-                assertMultipleExist(arrays, keys);
-            });
-
-            it(`with object values`, () => {
-                assertMultipleExist(objects, keys);
-            });
-
-            it(`with various type of values`, () => {
-                const mixedValues = [
-                    ...primitiveValues,
-                    ...arrays,
-                    ...objects
-                ];
-                assertMultipleExist(mixedValues, keys);
-            });
-
-        });
-
-    });
-
-    describe('should return key object when setting', () => {
-
-        describe('single entry', () => {
-
-            // Local assertion callback
-            const assertReturnedKey = (values: any[], key: StoreEntryKeySubstitute) => {
-                values.forEach((value) => {
-                    store = new Store();
-                    const returnedKey = store.set(key, value);
-                    expect(returnedKey instanceof StoreEntryKeyClass).toBeTruthy();
-                });
-            };
-
-            Object.keys(keys).forEach((keyLabel) => {
-
-                describe(`with primitive value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertReturnedKey(primitiveValues, keys[keyLabel]);
-                    });
-                });
-
-                describe(`with array value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertReturnedKey(arrays, keys[keyLabel]);
-                    });
-                });
-
-                describe(`with object value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertReturnedKey(objects, keys[keyLabel]);
-                    });
-                });
-
-            });
-        });
-
-        describe('multiple entries', () => {
-
-            // Local assertion callback
-            const assertMultipleReturnedKeys = (
-                values: any[],
-                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
-            ) => {
-
-                values.forEach((value) => {
-                    store = new Store();
-                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
-
-                    Object.keys(keyConfigs).forEach((keyLabel) => {
-                        sets.push({
-                            key: keyConfigs[keyLabel],
-                            value: value
-                        });
-                    });
-
-                    const returnedKeys = store.set(sets) as Array<void | StoreEntryKeyClass>;
-
-                    if (returnedKeys) {
-                        returnedKeys.forEach((returnedKey) => {
-                            expect(returnedKey instanceof StoreEntryKeyClass).toBeTruthy();
-                        });
-                    } else {
-                        expect(Array.isArray(returnedKeys)).toBeTruthy();
-                    }
-                });
-            };
-
-            it(`with primitive values`, () => {
-                assertMultipleReturnedKeys(primitiveValues, keys);
-            });
-
-            it(`with array values`, () => {
-                assertMultipleReturnedKeys(arrays, keys);
-            });
-
-            it(`with object values`, () => {
-                assertMultipleReturnedKeys(objects, keys);
-            });
-
-            it(`with various type of values`, () => {
-                const mixedValues = [
-                    ...primitiveValues,
-                    ...arrays,
-                    ...objects
-                ];
-                assertMultipleReturnedKeys(mixedValues, keys);
-            });
-
-        });
-
-    });
-
-    describe('should retrieve values from current position', () => {
-
-        describe('single entry value', () => {
-
-            // Local assertion callback
-            const assertRetrieval = (values: any[], key: StoreEntryKeySubstitute) => {
-                values.forEach((value) => {
-                    store = new Store();
-                    store.set(key, value);
-                    const retrievedValue = store.get(key);
-                    expect(retrievedValue).toEqual(value);
-                });
-            };
-
-            Object.keys(keys).forEach((keyLabel) => {
-
-                describe(`primitive value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertRetrieval(primitiveValues, keys[keyLabel]);
-                    });
-                });
-
-                describe(`array value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertRetrieval(arrays, keys[keyLabel]);
-                    });
-                });
-
-                describe(`object value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertRetrieval(objects, keys[keyLabel]);
-                    });
-                });
-            });
-
-        });
-
-        describe('multiple entries values', () => {
-
-            // Local assertion callback
-            const assertMultipleRetrieval = (
-                values: any[],
-                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
-            ) => {
-                values.forEach((value) => {
-                    store = new Store();
-                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
-
-                    Object.keys(keyConfigs).forEach((keyLabel) => {
-                        sets.push({
-                            key: keyConfigs[keyLabel],
-                            value: value
-                        });
-                    });
-
-                    store.set(sets);
-                    const keysToCheck = Object.keys(keyConfigs).map((keyLabel) => keyConfigs[keyLabel]);
-
-                    const retrievedValues = store.get(keysToCheck);
-                    retrievedValues.forEach((retrievedValue) => {
-                        expect(retrievedValue).toEqual(value);
-                    });
-                });
-            };
-
-            it(`with primitive values`, () => {
-                assertMultipleRetrieval(primitiveValues, keys);
-            });
-
-            it(`with array values`, () => {
-                assertMultipleRetrieval(arrays, keys);
-            });
-
-            it(`with object values`, () => {
-                assertMultipleRetrieval(objects, keys);
-            });
-
-            it(`with various type of values`, () => {
-                const mixedValues = [
-                    ...primitiveValues,
-                    ...arrays,
-                    ...objects
-                ];
-                assertMultipleRetrieval(mixedValues, keys);
-            });
-
-        });
-
     });
 
     describe('should retrieve values from specific position', () => {
@@ -315,7 +23,7 @@ describe('Store base module', () => {
 
             // Local assertion callback
             const assertRetrievalWithPosition = (key: StoreEntryKeySubstitute) => {
-                store = new Store();
+                store = new HistoryStore();
                 for (let i = 0; i < 5; i++) {
                     store.set(key, i);
                 }
@@ -355,7 +63,7 @@ describe('Store base module', () => {
             const assertMultipleRetrievalWithPosition = (
                 keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
             ) => {
-                store = new Store();
+                store = new HistoryStore();
                 for (let i = 0; i < 5; i++) {
                     const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
 
@@ -395,277 +103,6 @@ describe('Store base module', () => {
 
     });
 
-    describe('should hydrate store with initial values', () => {
-
-        // Local assertion callback
-        const assertHydration = (
-            values: any[],
-            keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
-        ) => {
-            values.forEach((value) => {
-                const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
-
-                Object.keys(keyConfigs).forEach((keyLabel) => {
-                    sets.push({
-                        key: keyConfigs[keyLabel],
-                        value: value
-                    });
-                });
-
-                const storeConfig: IStoreConfig = {
-                    initialValues: sets
-                };
-                store = new Store(storeConfig);
-
-                Object.keys(keyConfigs).forEach((keyLabel) => {
-                    const retrievedValue = store.get(keyConfigs[keyLabel]);
-                    expect(retrievedValue).toEqual(value);
-                });
-            });
-        };
-
-        it(`with primitive values`, () => {
-            assertHydration(primitiveValues, keys);
-        });
-
-        it(`with array values`, () => {
-            assertHydration(arrays, keys);
-        });
-
-        it(`with object values`, () => {
-            assertHydration(objects, keys);
-        });
-
-        it(`with various type of values`, () => {
-            const mixedValues = [
-                ...primitiveValues,
-                ...arrays,
-                ...objects
-            ];
-            assertHydration(mixedValues, keys);
-        });
-
-    });
-
-    describe('should check if entry exists', () => {
-
-        // Local assertion callback
-        const assertExistance = (
-            values: any[],
-            keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
-        ) => {
-            values.forEach((value) => {
-                const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
-
-                Object.keys(keyConfigs).forEach((keyLabel) => {
-                    sets.push({
-                        key: keyConfigs[keyLabel],
-                        value: value
-                    });
-                });
-
-                const storeConfig: IStoreConfig = {
-                    initialValues: sets
-                };
-                store = new Store(storeConfig);
-
-                Object.keys(keyConfigs).forEach((keyLabel) => {
-                    expect(store.exists(keyConfigs[keyLabel])).toBeTruthy();
-                    store.delete(keyConfigs[keyLabel]);
-
-                    expect(store.exists(keyConfigs[keyLabel])).toBeFalsy();
-                });
-            });
-        };
-
-        it(`with primitive values`, () => {
-            assertExistance(primitiveValues, keys);
-        });
-
-        it(`with array values`, () => {
-            assertExistance(arrays, keys);
-        });
-
-        it(`with object values`, () => {
-            assertExistance(objects, keys);
-        });
-
-        it(`with various type of values`, () => {
-            const mixedValues = [
-                ...primitiveValues,
-                ...arrays,
-                ...objects
-            ];
-            assertExistance(mixedValues, keys);
-        });
-    });
-
-    describe('should reset whole store', () => {
-
-        it('should erase all data', () => {
-
-            // Local assertion callback
-            const values = [
-                ...primitiveValues,
-                ...arrays,
-                ...objects
-            ];
-
-            values.forEach((value) => {
-                const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
-
-                Object.keys(keys).forEach((keyLabel) => {
-                    sets.push({
-                        key: keys[keyLabel],
-                        value: value
-                    });
-                });
-
-                const storeConfig: IStoreConfig = {
-                    initialValues: sets
-                };
-                store = new Store(storeConfig);
-                store.reset();
-
-                Object.keys(keys).forEach((keyLabel) => {
-                    expect(store.exists(keys[keyLabel])).toBeFalsy();
-                });
-            });
-
-        });
-
-        it('should erase namespace store data', () => {
-
-            // Local assertion callback
-            const values = [
-                ...primitiveValues,
-                ...arrays,
-                ...objects
-            ];
-            const namespaceToReset = 'someNamespace';
-
-            values.forEach((value) => {
-                const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
-
-                Object.keys(keys).forEach((keyLabel) => {
-                    sets.push({
-                        key: keys[keyLabel],
-                        value: value
-                    });
-                });
-
-                const storeConfig: IStoreConfig = {
-                    initialValues: sets
-                };
-                store = new Store(storeConfig);
-                store.reset(namespaceToReset);
-
-                Object.keys(keys).forEach((keyLabel) => {
-                    if (typeof keys[keyLabel] !== 'string') {
-                        const keyToCheck = keys[keyLabel] as IStoreEntryKeyConfig | StoreEntryKeyClass;
-                        if (keyToCheck.namespace === namespaceToReset) {
-                            expect(store.exists(keys[keyLabel])).toBeFalsy();
-                        } else {
-                            expect(store.exists(keys[keyLabel])).toBeTruthy();
-                        }
-                    }
-                });
-            });
-
-        });
-    });
-
-    describe('should delete data from the store and retrieve its value', () => {
-
-        describe('single entry', () => {
-
-            // Local assertion callback
-            const assertDeletion = (values: any[], key: StoreEntryKeySubstitute) => {
-                values.forEach((value) => {
-                    store = new Store();
-                    store.set(key, value);
-                    const retrievedValue = store.delete(key);
-                    expect(retrievedValue).toEqual(value);
-                    expect(store.exists(key)).toBeFalsy();
-                });
-            };
-
-            Object.keys(keys).forEach((keyLabel) => {
-
-                describe(`primitive value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertDeletion(primitiveValues, keys[keyLabel]);
-                    });
-                });
-
-                describe(`array value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertDeletion(arrays, keys[keyLabel]);
-                    });
-                });
-
-                describe(`object value`, () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertDeletion(objects, keys[keyLabel]);
-                    });
-                });
-            });
-
-        });
-
-        describe('multiple entries', () => {
-
-            // Local assertion callback
-            const assertMultipleDeletion = (
-                values: any[],
-                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
-            ) => {
-                values.forEach((value) => {
-                    store = new Store();
-                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
-
-                    Object.keys(keyConfigs).forEach((keyLabel) => {
-                        sets.push({
-                            key: keyConfigs[keyLabel],
-                            value: value
-                        });
-                    });
-
-                    store.set(sets);
-
-                    Object.keys(keyConfigs).forEach((keyLabel) => {
-                        const retrievedValue = store.delete(keyConfigs[keyLabel]);
-                        expect(retrievedValue).toEqual(value);
-                        expect(store.exists(keyConfigs[keyLabel])).toBeFalsy();
-                    });
-                });
-            };
-
-            it(`with primitive values`, () => {
-                assertMultipleDeletion(primitiveValues, keys);
-            });
-
-            it(`with array values`, () => {
-                assertMultipleDeletion(arrays, keys);
-            });
-
-            it(`with object values`, () => {
-                assertMultipleDeletion(objects, keys);
-            });
-
-            it(`with various type of values`, () => {
-                const mixedValues = [
-                    ...primitiveValues,
-                    ...arrays,
-                    ...objects
-                ];
-                assertMultipleDeletion(mixedValues, keys);
-            });
-
-        });
-
-    });
-
     describe('should return correct position', () => {
 
         describe('for single entry', () => {
@@ -673,7 +110,7 @@ describe('Store base module', () => {
             // Local assertion callback
             const assertPosition = (values: any[], key: StoreEntryKeySubstitute) => {
                 values.forEach((value) => {
-                    store = new Store();
+                    store = new HistoryStore();
                     for (let i = 0; i < 5; i++) {
                         store.set(key, value);
                         expect(store.position(key)).toEqual(i);
@@ -704,7 +141,7 @@ describe('Store base module', () => {
                 keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
             ) => {
                 values.forEach((value) => {
-                    store = new Store();
+                    store = new HistoryStore();
                     const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
 
                     Object.keys(keyConfigs).forEach((keyLabel) => {
@@ -748,11 +185,11 @@ describe('Store base module', () => {
 
     describe('should limit history', () => {
         it('no limit by default', () => {
-            store = new Store();
+            store = new HistoryStore();
             expect(store.limitHistory).toEqual(0);
         });
-        it('limit by store config', () => {
-            store = new Store({
+        it('limit by base-store config', () => {
+            store = new HistoryStore({
                 limitHistory: 10
             });
             expect(store.limitHistory).toEqual(10);
@@ -764,7 +201,7 @@ describe('Store base module', () => {
             const assertLimit = (values: any[], key: StoreEntryKeySubstitute) => {
                 values.forEach((value) => {
                     const limit = 3;
-                    store = new Store({
+                    store = new HistoryStore({
                         limitHistory: limit
                     });
                     for (let i = 0; i < 5; i++) {
@@ -801,7 +238,7 @@ describe('Store base module', () => {
             ) => {
                 values.forEach((value) => {
                     const limit = 3;
-                    store = new Store({
+                    store = new HistoryStore({
                         limitHistory: limit
                     });
                     const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
@@ -855,12 +292,12 @@ describe('Store base module', () => {
     describe('should disable history', () => {
 
         it('history enabled by default', () => {
-            store = new Store();
+            store = new HistoryStore();
             expect(store.keepHistory).toBeTruthy();
         });
 
-        it('disable history by store config', () => {
-            store = new Store({
+        it('disable history by base-store config', () => {
+            store = new HistoryStore({
                 keepHistory: false
             });
             expect(store.keepHistory).toBeFalsy();
@@ -871,7 +308,7 @@ describe('Store base module', () => {
             // Local assertion callback
             const assertDisabledHistory = (values: any[], key: StoreEntryKeySubstitute) => {
                 values.forEach((value) => {
-                    store = new Store({
+                    store = new HistoryStore({
                         keepHistory: false
                     });
                     for (let i = 0; i < 5; i++) {
@@ -905,7 +342,7 @@ describe('Store base module', () => {
                 keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
             ) => {
                 values.forEach((value) => {
-                    store = new Store({
+                    store = new HistoryStore({
                         keepHistory: false
                     });
                     const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
@@ -959,7 +396,7 @@ describe('Store base module', () => {
         // Local assertion callback
         const assertHistory = (values: any[], key: StoreEntryKeySubstitute) => {
             values.forEach((value) => {
-                store = new Store();
+                store = new HistoryStore();
                 for (let i = 0; i < 5; i++) {
                     store.set(key, value);
                     const history = store.history(key) as any[];
@@ -989,7 +426,7 @@ describe('Store base module', () => {
 
             Object.keys(keys).forEach((keyLabel) => {
                 describe(`using ${keyLabel} as an identifier`, () => {
-                    store = new Store();
+                    store = new HistoryStore();
                     const key = keys[keyLabel];
 
                     for (let i = 0; i < 5; i++) {
@@ -1009,7 +446,7 @@ describe('Store base module', () => {
 
             Object.keys(keys).forEach((keyLabel) => {
                 describe(`using ${keyLabel} as an identifier`, () => {
-                    store = new Store();
+                    store = new HistoryStore();
                     const key = keys[keyLabel];
 
                     for (let i = 0; i < 5; i++) {
@@ -1036,7 +473,7 @@ describe('Store base module', () => {
                     const key = keys[keyLabel];
 
                     for (let i = 1; i < 5; i++) {
-                        store = new Store();
+                        store = new HistoryStore();
                         for (let j = 0; j < 5; j++) {
                             store.set(key, j);
                         }
@@ -1058,7 +495,7 @@ describe('Store base module', () => {
 
             Object.keys(keys).forEach((keyLabel) => {
                 describe(`using ${keyLabel} as an identifier`, () => {
-                    store = new Store();
+                    store = new HistoryStore();
                     const key = keys[keyLabel];
 
                     for (let i = 0; i < 5; i++) {
@@ -1080,7 +517,7 @@ describe('Store base module', () => {
 
             Object.keys(keys).forEach((keyLabel) => {
                 describe(`using ${keyLabel} as an identifier`, () => {
-                    store = new Store();
+                    store = new HistoryStore();
                     const key = keys[keyLabel];
 
                     for (let i = 0; i < 5; i++) {
@@ -1109,7 +546,7 @@ describe('Store base module', () => {
                     const key = keys[keyLabel];
 
                     for (let i = 1; i < 5; i++) {
-                        store = new Store();
+                        store = new HistoryStore();
                         for (let j = 0; j < 5; j++) {
                             store.set(key, j);
                         }
@@ -1130,12 +567,12 @@ describe('Store base module', () => {
     describe('should handle non-linear history', () => {
 
         it('non-linear history disabled by default', () => {
-            store = new Store();
+            store = new HistoryStore();
             expect(store.keepForwardHistory).toBeFalsy();
         });
 
-        it('enable non-linear history by store config', () => {
-            store = new Store({
+        it('enable non-linear history by base-store config', () => {
+            store = new HistoryStore({
                 keepForwardHistory: true
             });
             expect(store.keepForwardHistory).toBeTruthy();
@@ -1150,7 +587,7 @@ describe('Store base module', () => {
                 keepForwardHistory: boolean
             ) => {
                 values.forEach((value) => {
-                    store = new Store({
+                    store = new HistoryStore({
                         keepForwardHistory: keepForwardHistory
                     });
 
@@ -1227,7 +664,7 @@ describe('Store base module', () => {
                 keepForwardHistory: boolean
             ) => {
                 values.forEach((value) => {
-                    store = new Store({
+                    store = new HistoryStore({
                         keepForwardHistory: keepForwardHistory
                     });
                     const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
@@ -1301,66 +738,5 @@ describe('Store base module', () => {
 
         });
 
-    });
-
-    describe('should produce snapshot', () => {
-        it('should produce snapshot of value store and namespace store', () => {
-
-            // Local assertion callback
-            const assertSnapshot = (
-                values: any[],
-                keyConfigs: { [keyLabel: string]: StoreEntryKeySubstitute }
-            ) => {
-                values.forEach((value) => {
-                    store = new Store();
-                    const sets: Array<{ key: StoreEntryKeySubstitute, value: any }> = [];
-
-                    Object.keys(keyConfigs).forEach((keyLabel) => {
-                        sets.push({
-                            key: keyConfigs[keyLabel],
-                            value: value
-                        });
-                    });
-
-                    const keysToCheck = sets.map((set) => {
-                        return set.key;
-                    });
-
-                    for (let i = 0; i < 5; i++) {
-                        store.set(sets);
-                    }
-
-                    const snapshot = store.snapshot();
-
-                    expect(snapshot.namespaceStore).toBeTruthy();
-                    expect(snapshot.store).toBeTruthy();
-
-                    keysToCheck.forEach((key) => {
-                        key = new StoreEntryKeyClass(key);
-                        let snapshotEntry: IStoreEntry<any>;
-                        if (key.namespace) {
-                            snapshotEntry = snapshot.namespaceStore[key.namespace][key.key];
-                        } else {
-                            snapshotEntry = snapshot.store[key.key];
-                        }
-
-                        expect(snapshotEntry.currentPosition).toEqual(4);
-                        expect(snapshotEntry.history.length).toEqual(5);
-
-                        snapshotEntry.history.forEach((historyValue) => {
-                            expect(historyValue).toEqual(value);
-                        });
-
-                    });
-                });
-            };
-
-            const mixedValues = [
-                ...primitiveValues,
-                ...arrays,
-                ...objects
-            ];
-            assertSnapshot(mixedValues, keys);
-        });
     });
 });

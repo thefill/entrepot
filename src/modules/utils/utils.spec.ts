@@ -1,4 +1,5 @@
-import {UtilsClass} from './utils.class';
+import {Utils} from './utils';
+import {generateTestValues} from './spec-utils';
 
 describe('Utils', () => {
     let primitiveValues: Array<string | number>;
@@ -15,21 +16,21 @@ describe('Utils', () => {
 
         it('primitive values', () => {
             primitiveValues.forEach((value) => {
-                const processed = UtilsClass.decoupleValue(value);
+                const processed = Utils.decoupleValue(value);
                 expect(processed).toEqual(value);
             });
         });
 
         it('arrays with values', () => {
             arrays.forEach((value) => {
-                const processed = UtilsClass.decoupleValue(value);
+                const processed = Utils.decoupleValue(value);
                 expect(processed).toEqual(value);
             });
         });
 
         it('objects', () => {
             objects.forEach((value) => {
-                const processed = UtilsClass.decoupleValue(value);
+                const processed = Utils.decoupleValue(value);
                 expect(processed).toEqual(value);
             });
         });
@@ -40,14 +41,14 @@ describe('Utils', () => {
 
         it('arrays with values', () => {
             arrays.forEach((value) => {
-                const processed = UtilsClass.decoupleValue(value);
+                const processed = Utils.decoupleValue(value);
                 expect(processed === value).not.toBeTruthy();
             });
         });
 
         it('objects', () => {
             objects.forEach((value) => {
-                const processed = UtilsClass.decoupleValue(value);
+                const processed = Utils.decoupleValue(value);
                 expect(processed === value).not.toBeTruthy();
             });
         });
@@ -56,7 +57,7 @@ describe('Utils', () => {
 
     it('should clone objects', () => {
         objects.forEach((value) => {
-            const processed = UtilsClass.deepClone(value);
+            const processed = Utils.deepClone(value);
             expect(processed === value).not.toBeTruthy();
         });
     });
@@ -89,7 +90,7 @@ describe('Utils', () => {
                 this.staticMethodB = 'staticValueB';
             }
         }
-        UtilsClass.mixin(ClassC, [ClassA, ClassB]);
+        Utils.mixin(ClassC, [ClassA, ClassB]);
 
         const newObjectC = new ClassC();
         expect(newObjectC.methodA).toBeDefined();
@@ -104,37 +105,3 @@ describe('Utils', () => {
     });
 
 });
-
-/**
- * Generate set of values for provided types
- * @returns {any}
- */
-export function generateTestValues(type: 'primitive' | 'array' | 'object'): any {
-    let value: any;
-
-    switch (type) {
-        case 'primitive':
-            value = [
-                123,
-                'string'
-            ];
-            break;
-        case 'array':
-            value = [
-                [1, 2, 3],
-                ['a', 'b', 'c'],
-                [{a: 1, b: 2}, {c: 1, d: 2}],
-                [[1, 2, 3], ['a', 'b', 'c']]
-            ];
-            break;
-        case 'object':
-            value = [
-                {a: 1, b: 2},
-                {c: 1, d: 2},
-                {e: {a: 1, b: 2}, f: {c: 1, d: 2}}
-            ];
-            break;
-    }
-
-    return value;
-}

@@ -1,15 +1,15 @@
-import {IStoreEntryKeyConfig, StoreEntryKeySubstitute} from '../store';
-import {StoreEntryKeyClass} from './store-entry-key.class';
+import {StoreEntryKey} from './store-entry-key';
+import {IStoreEntryKeyConfig, StoreEntryKeySubstitute} from './store-entry-key.interface';
 
-describe('Store entry key', () => {
+describe('BaseStore entry key', () => {
     it('should by default have no values', () => {
-        const key = new StoreEntryKeyClass();
+        const key = new StoreEntryKey();
         expect(typeof key.key).toEqual('undefined');
         expect(typeof key.namespace).toEqual('undefined');
     });
     it('should be valid when constructed with string value', () => {
         const keyValue = 'someKey';
-        const key = new StoreEntryKeyClass(keyValue);
+        const key = new StoreEntryKey(keyValue);
         expect(key.key).toEqual(keyValue);
         expect(typeof key.namespace).toEqual('undefined');
     });
@@ -19,7 +19,7 @@ describe('Store entry key', () => {
             {namespace: 'someNamespace', key: 'someKey'}
         ];
         configs.forEach((config) => {
-            const key = new StoreEntryKeyClass(config);
+            const key = new StoreEntryKey(config);
             expect(key.key).toEqual(config.key);
             expect(key.namespace).toEqual(config.namespace);
         });
@@ -31,20 +31,20 @@ describe('Store entry key', () => {
         ];
         configs.forEach((config) => {
             try {
-                const key = new StoreEntryKeyClass(config);
+                const key = new StoreEntryKey(config);
             } catch (error) {
                 expect(error).toBeTruthy();
             }
         });
     });
-    it('should be valid when constructed with another store entry key object', () => {
+    it('should be valid when constructed with another base-store entry key object', () => {
         const configs: StoreEntryKeySubstitute[] = [
             'someKey',
             {key: 'someKey'},
             {namespace: 'someNamespace', key: 'someKey'}
         ];
         configs.forEach((config) => {
-            const key = new StoreEntryKeyClass(config);
+            const key = new StoreEntryKey(config);
             expect(key).toBeTruthy();
 
             expect(key.key).toEqual(typeof config === 'string' ? config : config.key);

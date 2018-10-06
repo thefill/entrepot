@@ -4,13 +4,13 @@ export interface IEvents {
     [event: string]: StoreEventListener[];
 }
 
-export class StoreEventEmitter {
+export class Effects {
     protected events: IEvents = {};
 
     // TODO: define value of events
     // ('set', 'update', 'delete', 'setNamespace', 'setNamespace', 'deleteNamespace', 'updateInNamespace')
     // TODO: in listener creation provide StoreEntryKeySubstitute to pinpoint events for specific value
-    // TODO: extend store module with StoreEventEmitter class
+    // TODO: extend base-store module with Effects class
     public on(event: string, listener: StoreEventListener): () => void {
         if (typeof this.events[event] !== 'object') {
             this.events[event] = [];
