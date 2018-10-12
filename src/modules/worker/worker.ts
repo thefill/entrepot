@@ -2,5 +2,5 @@
  * Base base-store class
  */
 export class Worker<T = any> {
-    // TODO: move schema functionality from BaseStore module
+    // TODO: introduce worker base-store!! ;-D (separate class that spawns base-store as a worker and communicate with it)
 }

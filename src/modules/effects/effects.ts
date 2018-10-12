@@ -6,6 +6,9 @@ export interface IEvents {
 
 export class Effects {
     protected events: IEvents = {};
+    // TODO: emit change (using base-store-emitter)
+    // TODO: implement: debounceEmit
+    // TODO: use .on as sideeffects - when something happen fire
 
     // TODO: define value of events
     // ('set', 'update', 'delete', 'setNamespace', 'setNamespace', 'deleteNamespace', 'updateInNamespace')

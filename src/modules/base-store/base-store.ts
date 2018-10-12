@@ -13,6 +13,7 @@ import {
  * MAin store functions
  */
 export class BaseStore<T = any> implements IBaseStore<T> {
+    // TODO: implement: persistTime: number
     // initial values
     public initialValues?: initialValues<T>;
 

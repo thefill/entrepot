@@ -7,6 +7,7 @@ import {IBaseStore} from '../base-store';
  * Search functionality for the store
  */
 export abstract class Backup<T = any> implements IBaseStore<T> {
+    // TODO: add option to backup timeline to browser storage to recreate steps
     public abstract exists;
     public abstract reset;
     public abstract set;

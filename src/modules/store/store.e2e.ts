@@ -1,7 +1,7 @@
 import * as Benchmark from 'benchmark';
 
 xdescribe('Speed', () => {
-    // TODO: implement benchmark
+    // TODO: add benchmark of read/write to the tests
     jest.setTimeout(30000);
     fit('expect', async () => {
         const zzz = () => {

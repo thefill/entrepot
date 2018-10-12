@@ -1,6 +1,6 @@
 /**
- * Base base-store class
+ * Schema validation functionality
  */
 export class Schema<T = any> {
-    // TODO: move schema functionality from BaseStore module
+    // TODO: implement: Schema: json schema
 }
