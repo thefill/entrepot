@@ -13,7 +13,7 @@ import {
  * MAin store functions
  */
 export class BaseStore<T = any> implements IBaseStore<T> {
-    // TODO: implement: persistTime: number
+    // TODO: implement: persistTime: number - worker to clean records
     // initial values
     public initialValues?: initialValues<T>;
 

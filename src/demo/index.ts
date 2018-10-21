@@ -1,6 +1,10 @@
 import {Store, StoreEntryKeySubstitute} from "../modules";
 
 class DemoModule {
+    // TODO: move demo to react
+    // TODO: add code examples with use-cases
+    // TODO: add demo o traversing history
+    // TODO: add demo of emitter
 
     /**
      * Convert stringified json to colorful html

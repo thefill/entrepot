@@ -1,6 +1,6 @@
 /**
- * Schema validation functionality
+ * Action validation functionality
  */
 export class Schema<T = any> {
-    // TODO: implement: Schema: json schema
+    // TODO: implement: Action: json schema
 }

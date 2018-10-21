@@ -8,10 +8,6 @@ export class StoreEntryKey implements IStoreEntryKeyConfig {
     public namespace: string;
     // Entry key
     public key: string;
-    // history enabled, by default enabled
-    public keepHistory = true;
-    // history limit, by default no limit
-    public limitHistory = 0;
 
     /**
      * Create key

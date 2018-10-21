@@ -1,5 +1,5 @@
 // TODO: implement tests
-describe('BaseStore event emitter', () => {
+describe('Store event emitter', () => {
     it('test', () => {
         expect(1).toBeTruthy();
     });
