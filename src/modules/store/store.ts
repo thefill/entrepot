@@ -1,13 +1,11 @@
-import {HistoryStore} from '../history-store';
 import {Backup, IBackup, IStoreSnapshot} from '../backup';
+import {HistoryStore} from '../history-store';
 import {ISearch, Search} from '../search';
 import {StoreEntryKey} from '../store-entry-key';
 import {Utils} from '../utils';
 
-class HybridStore<T = any> extends HistoryStore<T>
+class HybridStore<T = any> extends HistoryStore<T> implements IBackup<T>, ISearch<T> {
     // TODO: automatic docs via http://typedoc.org/guides/doccomments/
-    
-    implements IBackup<T>, ISearch<T> {
 
     public snapshot: () => IStoreSnapshot<T>;
     public find: (SearchCallback) => T | void;

@@ -6,9 +6,7 @@ import {StoreEntryKey, StoreEntryKeySubstitute} from '../store-entry-key';
  */
 export class Emitter {
 
-    // TODO: emit change (using base-store-emitter)
     // TODO: implement: debounceEmit
-    // TODO: extend base-store module with Emitter class
 
     /**
      * Remove listener for the event from generic event store
