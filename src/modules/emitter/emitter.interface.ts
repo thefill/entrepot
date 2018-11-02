@@ -32,3 +32,11 @@ export enum EventTypes {
     DELETE_NAMESPACE = 'deleteNamespace',
     UPDATE_NAMESPACE = 'updateInNamespace'
 }
+
+export interface IBaseStoreEmitter {
+    emit(
+        event: EventTypes,
+        key: StoreEntryKey,
+        ...args: any[]
+    ): void;
+}

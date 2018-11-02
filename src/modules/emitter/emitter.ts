@@ -1,5 +1,5 @@
-import {EventTypes, IEventStore, StoreEventListener} from './emitter.interface';
 import {StoreEntryKey, StoreEntryKeySubstitute} from '../store-entry-key';
+import {EventTypes, IEventStore, StoreEventListener} from './emitter.interface';
 
 /**
  * Event emitting functionality for the store.
@@ -7,6 +7,12 @@ import {StoreEntryKey, StoreEntryKeySubstitute} from '../store-entry-key';
 export class Emitter {
 
     // TODO: implement: debounceEmit
+
+    // Key used to group listeners for any key
+    protected static anyKeyOrNamespace = new StoreEntryKey({
+        namespace: '__ANY__',
+        key: '__ANY__'
+    });
 
     /**
      * Remove listener for the event from generic event store
@@ -17,30 +23,54 @@ export class Emitter {
      */
     protected static removeListenerFromStore(
         store: IEventStore,
-        event: string,
-        keyOrNamespace: StoreEntryKeySubstitute | void,
-        listener: StoreEventListener
-    ): void {
-        // TODO: resolve key/namespace name/namespace name
-        if (typeof store[event] === 'object') {
-            const index: number = store[event].indexOf(listener);
-            if (index > -1) {
-                store[event].splice(index, 1);
+        event: EventTypes,
+        listener: StoreEventListener,
+        keyOrNamespace: StoreEntryKeySubstitute,
+    ): void{
+        // set container for event
+        if (typeof store[event] !== 'object'){
+            return;
+        }
+
+        const keyObject = new StoreEntryKey(keyOrNamespace);
+
+        // set inner key for key/namespace as namespace_key
+        const listenerKey = Emitter.buildListenerKey(keyObject);
+
+        // set container for event listener
+        if (!Array.isArray(store[event][listenerKey])){
+            return;
+        }
+
+        const index: number = store[event][listenerKey].indexOf(listener);
+        if (index === -1){
+            return;
+        }
+        store[event][listenerKey].splice(index, 1);
+
+        // if no more listeners for key/ namespace or event cleanup
+        if (!store[event][listenerKey].length){
+            if (!Object.keys(store[event].length)){
+                delete store[event];
+            } else {
+                delete store[event][listenerKey];
             }
         }
+
+        store[event][listenerKey].push(listener);
     }
 
     /**
      * Remove all listeners for the event from generic event store
      * @param {IEventStore} store
      * @param {string} event
-     * @param {StoreEntryKeySubstitute | void} keyOrNamespace
+     * @param {StoreEntryKey} keyObject
      */
     protected static removeListenersFromStore(
         store: IEventStore,
-        event: string,
-        keyOrNamespace: StoreEntryKeySubstitute | void
-    ): void {
+        event: EventTypes,
+        keyObject: StoreEntryKey
+    ): void{
         // TODO: resolve key/namespace name
         delete store[event];
     }
@@ -54,68 +84,71 @@ export class Emitter {
      */
     protected static addListenerToStore(
         store: IEventStore,
-        event: string,
-        keyOrNamespace: StoreEntryKeySubstitute | void,
-        listener: StoreEventListener
-    ): void {
+        event: EventTypes,
+        listener: StoreEventListener,
+        keyOrNamespace: StoreEntryKeySubstitute
+    ): void{
+        const keyObject = new StoreEntryKey(keyOrNamespace);
         // TODO: resolve key/namespace name
-        // TODO: set inner key for key/namespace as namespace_key
-        if (typeof store[event] !== 'object') {
+        // TODO: resolve event.ALL && no key/namespace
+
+        // set container for event
+        if (typeof store[event] !== 'object'){
             store[event] = {};
         }
 
-        store[event].push(listener);
+        // set inner key for key/namespace as namespace_key
+        const listenerKey = Emitter.buildListenerKey(keyObject);
+
+        // set container for event listener
+        if (!Array.isArray(store[event][listenerKey])){
+            store[event][listenerKey] = [];
+        }
+
+        store[event][listenerKey].push(listener);
+    }
+
+    /**
+     * Builds listener identifier from provided object key
+     * @param {StoreEntryKey} keyObject
+     * @return {string}
+     */
+    protected static buildListenerKey(
+        keyObject: StoreEntryKey
+    ): string {
+        return keyObject.namespace ? `${keyObject.namespace}_${keyObject.key}` : keyObject.key;
     }
 
     /**
      * Execute listeners for event in generic event store
      * @param {IEventStore} store
      * @param {EventTypes} event
-     * @param {StoreEntryKeySubstitute | void} keyOrNamespace
+     * @param {StoreEntryKey} entryKey
      * @param {any[]} args
      */
     protected static emitForStore(
         store: IEventStore,
         event: EventTypes,
-        keyOrNamespace: StoreEntryKeySubstitute | void,
+        entryKey: StoreEntryKey,
         args: any[]
-    ): void {
-        const identifier = Emitter.resolveIdentifier(event, keyOrNamespace);
-        const listeners = Emitter.getListenersFromStore(store, event, identifier);
-        if (!Array.isArray(listeners)) {
-            return;
-        }
+    ): void{
+        const listeners = Emitter.getListenersFromStore(store, event, entryKey);
 
-        listeners.forEach((listener) => listener.apply(this, [event, identifier, ...args]));
-    }
-
-    /**
-     * Returns store key or namespace name
-     * @param {EventTypes} event
-     * @param {StoreEntryKeySubstitute | void} keyOrNamespace
-     * @returns {StoreEntryKey | string}
-     */
-    protected static resolveIdentifier(
-        event: EventTypes,
-        keyOrNamespace: StoreEntryKeySubstitute | void
-    ): StoreEntryKey | string | void {
-
-        // TODO: implement
-        return '';
+        listeners.forEach((listener) => listener.apply(this, [event, entryKey, ...args]));
     }
 
     /**
      * Retrieve listeners in the generic event store
      * @param {IEventStore} store
      * @param {EventTypes} event
-     * @param {StoreEntryKeySubstitute | void} keyOrNamespace
+     * @param {StoreEntryKey} entryKey
      * @returns {StoreEventListener[]}
      */
     protected static getListenersFromStore(
         store: IEventStore,
         event: EventTypes,
-        keyOrNamespace: StoreEntryKey | string | void
-    ): StoreEventListener[] | void {
+        entryKey: StoreEntryKey
+    ): StoreEventListener[]{
         // TODO: resolve key/namespace name
         // TODO: resolve event.ALL && no key/namespace
         return [];
@@ -134,10 +167,10 @@ export class Emitter {
      */
     public on(
         event: EventTypes,
-        keyOrNamespace: StoreEntryKeySubstitute | void,
-        listener: StoreEventListener
-    ): void {
-        Emitter.addListenerToStore(this.events, event, keyOrNamespace, listener);
+        listener: StoreEventListener,
+        keyOrNamespace: StoreEntryKeySubstitute = Emitter.anyKeyOrNamespace
+    ): void{
+        Emitter.addListenerToStore(this.events, event, listener, keyOrNamespace);
     }
 
     /**
@@ -147,11 +180,11 @@ export class Emitter {
      * @param {StoreEventListener} listener
      */
     public once(
-        event: EventTypes,
-        keyOrNamespace: StoreEntryKeySubstitute | void,
-        listener: StoreEventListener
-    ): void {
-        Emitter.addListenerToStore(this.events, event, keyOrNamespace, listener);
+        event: EventTypes = EventTypes.ALL,
+        listener: StoreEventListener,
+        keyOrNamespace: StoreEntryKeySubstitute = Emitter.anyKeyOrNamespace
+    ): void{
+        Emitter.addListenerToStore(this.events, event, listener, keyOrNamespace);
     }
 
     /**
@@ -162,17 +195,17 @@ export class Emitter {
      */
     public removeListener(
         event: EventTypes,
-        keyOrNamespace: StoreEntryKeySubstitute | void,
-        listener: StoreEventListener
-    ): void {
-        Emitter.removeListenerFromStore(this.events, event, keyOrNamespace, listener);
-        Emitter.removeListenerFromStore(this.onceEvents, event, keyOrNamespace, listener);
+        listener: StoreEventListener,
+        keyOrNamespace: StoreEntryKeySubstitute = Emitter.anyKeyOrNamespace
+    ): void{
+        Emitter.removeListenerFromStore(this.events, event, listener, keyOrNamespace);
+        Emitter.removeListenerFromStore(this.onceEvents, event, listener, keyOrNamespace);
     }
 
     /**
      * Remove all listeners for all events from all event stores
      */
-    public removeAllListeners(): void {
+    public removeAllListeners(): void{
         this.events = {};
         this.onceEvents = {};
     }
@@ -183,11 +216,11 @@ export class Emitter {
      * @param {StoreEntryKey} key
      * @param args
      */
-    public emit(
+    protected emit(
         event: EventTypes,
         key: StoreEntryKey,
         ...args: any[]
-    ): void {
+    ): void{
         Emitter.emitForStore(this.events, event, key, args);
         Emitter.emitForStore(this.onceEvents, event, key, args);
 

@@ -1,3 +1,4 @@
+import {EventTypes, IBaseStoreEmitter} from '../emitter';
 import {IStoreEntry, StoreEntry} from '../store-entry';
 import {StoreEntryKey, StoreEntryKeySubstitute} from '../store-entry-key';
 import {Utils} from '../utils';
@@ -12,7 +13,7 @@ import {
 /**
  * MAin store functions
  */
-export class BaseStore<T = any> implements IBaseStore<T> {
+export class BaseStore<T = any> implements IBaseStore<T>, IBaseStoreEmitter {
     // TODO: implement: persistTime: number - worker to clean records
     // initial values
     public initialValues?: initialValues<T>;
@@ -310,4 +311,10 @@ export class BaseStore<T = any> implements IBaseStore<T> {
         entry.history = [value];
         entry.currentPosition = 0;
     }
+
+    protected emit(
+        event: EventTypes,
+        key: StoreEntryKey,
+        ...args: any[]
+    ): void {}
 }
