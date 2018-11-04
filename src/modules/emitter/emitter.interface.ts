@@ -28,15 +28,8 @@ export enum EventTypes {
     SET = 'set',
     UPDATE = 'update',
     DELETE = 'delete',
-    SET_NAMESPACE = 'setNamespace',
-    DELETE_NAMESPACE = 'deleteNamespace',
-    UPDATE_NAMESPACE = 'updateInNamespace'
-}
-
-export interface IBaseStoreEmitter {
-    emit(
-        event: EventTypes,
-        key: StoreEntryKey,
-        ...args: any[]
-    ): void;
+    ALL_IN_NAMESPACE = 'allInNamespace',
+    SET_IN_NAMESPACE = 'setInNamespace',
+    DELETE_IN_NAMESPACE = 'deleteInNamespace',
+    UPDATE_IN_NAMESPACE = 'updateInNamespace'
 }

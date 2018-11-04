@@ -16,15 +16,16 @@
         "build:example": "parcel build src/demo/index.html",
         "// CODE QUALITY SCRIPTS //": "----------------------------------------------",
         "lint": "tslint -c tslint.json src/*.ts",
-        "test": "jest --config jest.config.json",
-        "test:watch": "jest --config jest.config.json --watch",
-        "test:coverage": "jest --config jest.config.json --coverage",
+        "test": "jest --config jest-unit.config.json",
+        "e2e": "jest --config jest-e2e.config.json",
+        "test:watch": "jest --config jest-unit.config.json --watch",
+        "test:coverage": "jest --config jest-unit.config.json --coverage",
         "// UTILS SCRIPTS //": "-----------------------------------------------------",
         "deploy:site": "gh-pages -d site -b master && run-s docs build:site ",
         "docs": "typedoc --mode modules --exclude \"**/*+(index|.spec|.e2e).ts\" --tsconfig tsconfig.esm.json --hideGenerator --readme README.md --out docs src",
         "clean": "echo 'Cleaning...' && rimraf dist && rimraf docs && rimraf site && rimraf coverage",
-        "precommit": "run-s lint test build clean",
-        "prepush": "run-s lint test"
+        "precommit": "run-s lint test e2e build clean",
+        "prepush": "run-s lint test e2e"
     },
     "watch": {
         "build": {

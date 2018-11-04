@@ -1,4 +1,4 @@
-import {EventTypes, IBaseStoreEmitter} from '../emitter';
+import {Emitter, EventTypes} from '../emitter';
 import {IStoreEntry, StoreEntry} from '../store-entry';
 import {StoreEntryKey, StoreEntryKeySubstitute} from '../store-entry-key';
 import {Utils} from '../utils';
@@ -13,7 +13,10 @@ import {
 /**
  * MAin store functions
  */
-export class BaseStore<T = any> implements IBaseStore<T>, IBaseStoreEmitter {
+export class BaseStore<T = any>
+    extends Emitter
+    implements IBaseStore<T> {
+
     // TODO: implement: persistTime: number - worker to clean records
     // initial values
     public initialValues?: initialValues<T>;
@@ -28,6 +31,7 @@ export class BaseStore<T = any> implements IBaseStore<T>, IBaseStoreEmitter {
      * @param {IBaseStoreConfig<T>} config
      */
     constructor(config?: IBaseStoreConfig<T>) {
+        super();
         if (config) {
             // if values provided
             if (Array.isArray(config.initialValues) && config.initialValues.length) {
@@ -249,7 +253,7 @@ export class BaseStore<T = any> implements IBaseStore<T>, IBaseStoreEmitter {
 
         // get entry value and delete entry form base-store
         let entry: IStoreEntry<T>;
-        let value: T;
+        let value: any;
 
         // if entry in namespace
         if (keyObject.namespace && keyObject.key) {
@@ -257,18 +261,21 @@ export class BaseStore<T = any> implements IBaseStore<T>, IBaseStoreEmitter {
             value = entry.history[entry.currentPosition];
 
             delete this.namespaceStore[keyObject.namespace][keyObject.key];
-            return value;
+            this.emit(EventTypes.DELETE_IN_NAMESPACE, keyObject);
+            this.emit(EventTypes.ALL_IN_NAMESPACE, keyObject);
         } else if (keyObject.namespace) {
             // if only namespace provided
             delete this.namespaceStore[keyObject.namespace];
-            return;
         } else {
             entry = this.store[keyObject.key];
             value = entry.history[entry.currentPosition];
 
             delete this.store[keyObject.key];
-            return value;
         }
+
+        this.emit(EventTypes.DELETE, keyObject);
+        this.emit(EventTypes.ALL, keyObject);
+        return value ? value as T : undefined;
     }
 
     /**
@@ -284,21 +291,30 @@ export class BaseStore<T = any> implements IBaseStore<T>, IBaseStoreEmitter {
                 // if namespace exist preserve its content
                 if (this.namespaceStore[key.namespace]) {
                     this.namespaceStore[key.namespace][key.key] = entry;
+                    this.emit(EventTypes.UPDATE_IN_NAMESPACE, key, value);
                 } else {
                     // create new namespace entry
                     this.namespaceStore[key.namespace] = {[key.key]: entry};
+                    this.emit(EventTypes.SET_IN_NAMESPACE, key, value);
                 }
+                this.emit(EventTypes.ALL_IN_NAMESPACE, key, value);
             } else {
                 this.store[key.key] = entry;
             }
+            // emit set event
+            this.emit(EventTypes.SET, key, value);
         } else {
             // if entry exist in base-store
             if (key.namespace) {
                 this.updateEntry(this.namespaceStore[key.namespace][key.key], value);
+                this.emit(EventTypes.UPDATE_IN_NAMESPACE, key, value);
+                this.emit(EventTypes.ALL_IN_NAMESPACE, key, value);
             } else {
                 this.updateEntry(this.store[key.key], value);
             }
+            this.emit(EventTypes.UPDATE, key, value);
         }
+        this.emit(EventTypes.ALL, key, value);
     }
 
     /**
@@ -311,10 +327,4 @@ export class BaseStore<T = any> implements IBaseStore<T>, IBaseStoreEmitter {
         entry.history = [value];
         entry.currentPosition = 0;
     }
-
-    protected emit(
-        event: EventTypes,
-        key: StoreEntryKey,
-        ...args: any[]
-    ): void {}
 }
