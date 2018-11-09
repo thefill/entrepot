@@ -46,11 +46,11 @@ export class Emitter {
             store[event][listenerKey].splice(index, 1);
         }
 
-        // if no more listeners for key/ namespace or event do cleanup
+        // if no more listeners for key / namespace or event do cleanup
         if (!store[event][listenerKey].length || !listener) {
             delete store[event][listenerKey];
         }
-        if (!Object.keys(store[event].length)) {
+        if (store[event] && !Object.keys(store[event]).length) {
             delete store[event];
         }
     }
@@ -172,7 +172,7 @@ export class Emitter {
         listener: StoreEventListener,
         keyOrNamespace: StoreEntryKeySubstitute = Emitter.anyKeyOrNamespace
     ): void {
-        Emitter.addListenerToStore(this.events, event, listener, keyOrNamespace);
+        Emitter.addListenerToStore(this.onceEvents, event, listener, keyOrNamespace);
     }
 
     /**

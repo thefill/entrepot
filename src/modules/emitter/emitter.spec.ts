@@ -1,8 +1,8 @@
+import {StoreEntryKey, StoreEntryKeySubstitute} from '../store-entry-key';
 // TODO: implement tests
 import {generateTestValues, testKeys} from '../utils';
 import {Emitter} from './emitter';
 import {EventTypes} from './emitter.interface';
-import {StoreEntryKey, StoreEntryKeySubstitute} from '../store-entry-key';
 
 /**
  * Emitter with setup to tests
@@ -13,7 +13,7 @@ class EmitterMock extends Emitter {
         event: EventTypes,
         objectKey: StoreEntryKey,
         ...args: any[]
-    ): void {
+    ): void{
         super.emit(event, objectKey, ...args);
     }
 }
@@ -97,6 +97,7 @@ describe('Emitter', () => {
         const assertEmit = (
             emitsCount: number,
             expectedCount: number,
+            listeningMethod: 'on' | 'once',
             key?: StoreEntryKeySubstitute,
             eventType?: EventTypes,
             values?: any[]
@@ -106,7 +107,7 @@ describe('Emitter', () => {
             const broadcastedValue = values;
             let emittedCount = 0;
 
-            emitter.on(
+            emitter[listeningMethod](
                 eventType,
                 (receivedEventType, receivedKey, receivedValue) => {
                     expect(receivedEventType).toEqual(broadcastedEventType);
@@ -129,65 +130,198 @@ describe('Emitter', () => {
 
         };
 
-        describe('should emit multiple times', () => {
+        const scenarios: Array<{
+            emitsCount: number,
+            expectedCount: number,
+            listeningMethod: 'on' | 'once',
+            title: string
+        }> = [{
+            emitsCount: 3,
+            expectedCount: 3,
+            listeningMethod: 'on',
+            title: 'should emit multiple times'
+        }, {
+            emitsCount: 3,
+            expectedCount: 1,
+            listeningMethod: 'once',
+            title: 'should emit once'
+        }];
+
+        scenarios.forEach((scenario) => {
+            describe(scenario.title, () => {
+                Object.keys(keys).forEach((keyLabel) => {
+                    describe('for specific event', () => {
+                        eventTypes.forEach((event) => {
+                            describe(`for event of type ${event}`, () => {
+                                describe(`with primitive value`, () => {
+                                    it(`using ${keyLabel} as an identifier`, () => {
+                                        assertEmit(
+                                            scenario.emitsCount,
+                                            scenario.expectedCount,
+                                            scenario.listeningMethod,
+                                            keys[keyLabel],
+                                            event,
+                                            primitiveValues
+                                        );
+                                    });
+                                });
+
+                                describe(`with array value`, () => {
+                                    it(`using ${keyLabel} as an identifier`, () => {
+                                        assertEmit(
+                                            scenario.emitsCount,
+                                            scenario.expectedCount,
+                                            scenario.listeningMethod,
+                                            keys[keyLabel],
+                                            event,
+                                            arrays
+                                        );
+                                    });
+                                });
+
+                                describe(`with object value`, () => {
+                                    it(`using ${keyLabel} as an identifier`, () => {
+                                        assertEmit(
+                                            scenario.emitsCount,
+                                            scenario.expectedCount,
+                                            scenario.listeningMethod,
+                                            keys[keyLabel], event,
+                                            objects
+                                        );
+                                    });
+                                });
+
+                                describe(`without values`, () => {
+                                    it(`using ${keyLabel} as an identifier`, () => {
+                                        assertEmit(
+                                            scenario.emitsCount,
+                                            scenario.expectedCount,
+                                            scenario.listeningMethod,
+                                            keys[keyLabel], event,
+                                            undefined
+                                        );
+                                    });
+                                });
+                            });
+                        });
+                    });
+                    describe('without providing event', () => {
+                        describe(`with primitive value`, () => {
+                            it(`using ${keyLabel} as an identifier`, () => {
+                                assertEmit(
+                                    scenario.emitsCount,
+                                    scenario.expectedCount,
+                                    scenario.listeningMethod,
+                                    keys[keyLabel],
+                                    undefined,
+                                    primitiveValues
+                                );
+                            });
+                        });
+
+                        describe(`with array value`, () => {
+                            it(`using ${keyLabel} as an identifier`, () => {
+                                assertEmit(
+                                    scenario.emitsCount,
+                                    scenario.expectedCount,
+                                    scenario.listeningMethod,
+                                    keys[keyLabel],
+                                    undefined,
+                                    arrays
+                                );
+                            });
+                        });
+
+                        describe(`with object value`, () => {
+                            it(`using ${keyLabel} as an identifier`, () => {
+                                assertEmit(
+                                    scenario.emitsCount,
+                                    scenario.expectedCount,
+                                    scenario.listeningMethod,
+                                    keys[keyLabel],
+                                    undefined,
+                                    objects
+                                );
+                            });
+                        });
+
+                        describe(`without values`, () => {
+                            it(`using ${keyLabel} as an identifier`, () => {
+                                assertEmit(
+                                    scenario.emitsCount,
+                                    scenario.expectedCount,
+                                    scenario.listeningMethod,
+                                    keys[keyLabel],
+                                    undefined,
+                                    undefined
+                                );
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+    });
+
+    describe('should emit events to listeners', () => {
+        // Local assertion callback
+        const assertRemoval = (
+            key?: StoreEntryKeySubstitute,
+            eventType?: EventTypes
+        ) => {
+            const broadcastedEventType = eventType ? eventType : EventTypes.ALL;
+            const broadcastedKey = key ? new StoreEntryKey(key) : Emitter.anyKeyOrNamespace;
+            const broadcastedValue = 'test';
+            let emittedCount = 0;
+            const listener = () => {
+                emittedCount++;
+            };
+
+            emitter.on(eventType, listener, key);
+
+            emitter.removeListener(broadcastedEventType, listener, key);
+
+            for (let i = 0; i < 3; i++) {
+                emitter.emit(
+                    broadcastedEventType,
+                    broadcastedKey,
+                    broadcastedValue
+                );
+            }
+
+            expect(emittedCount).toEqual(0);
+
+        };
+
+        describe(scenario.title, () => {
             Object.keys(keys).forEach((keyLabel) => {
                 describe('for specific event', () => {
                     eventTypes.forEach((event) => {
                         describe(`for event of type ${event}`, () => {
                             describe(`with primitive value`, () => {
                                 it(`using ${keyLabel} as an identifier`, () => {
-                                    assertEmit(3, 3, keys[keyLabel], event, primitiveValues);
+                                    assertRemoval(
+                                        keys[keyLabel],
+                                        event
+                                    );
                                 });
                             });
 
-                            describe(`with array value`, () => {
-                                it(`using ${keyLabel} as an identifier`, () => {
-                                    assertEmit(3, 3, keys[keyLabel], event, arrays);
-                                });
-                            });
-
-                            describe(`with object value`, () => {
-                                it(`using ${keyLabel} as an identifier`, () => {
-                                    assertEmit(3, 3, keys[keyLabel], event, objects);
-                                });
-                            });
-
-                            describe(`without values`, () => {
-                                it(`using ${keyLabel} as an identifier`, () => {
-                                    assertEmit(3, 3, keys[keyLabel], event, undefined);
-                                });
-                            });
                         });
                     });
                 });
                 describe('without providing event', () => {
-                    describe(`with primitive value`, () => {
-                        it(`using ${keyLabel} as an identifier`, () => {
-                            assertEmit(3, 3, keys[keyLabel], undefined, primitiveValues);
-                        });
-                    });
-
-                    describe(`with array value`, () => {
-                        it(`using ${keyLabel} as an identifier`, () => {
-                            assertEmit(3, 3, keys[keyLabel], undefined, arrays);
-                        });
-                    });
-
-                    describe(`with object value`, () => {
-                        it(`using ${keyLabel} as an identifier`, () => {
-                            assertEmit(3, 3, keys[keyLabel], undefined, objects);
-                        });
-                    });
-
-                    describe(`without values`, () => {
-                        it(`using ${keyLabel} as an identifier`, () => {
-                            assertEmit(3, 3, keys[keyLabel], undefined, undefined);
-                        });
+                    it(`using ${keyLabel} as an identifier`, () => {
+                        assertRemoval(
+                            keys[keyLabel],
+                            undefined
+                        );
                     });
                 });
             });
         });
-        // describe('should emit once', () => {});
+
     });
     // describe('should remove specific listeners', () => {
     // });
