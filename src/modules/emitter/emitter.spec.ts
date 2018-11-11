@@ -2,7 +2,7 @@ import {StoreEntryKey, StoreEntryKeySubstitute} from '../store-entry-key';
 // TODO: implement tests
 import {generateTestValues, testKeys} from '../utils';
 import {Emitter} from './emitter';
-import {EventTypes} from './emitter.interface';
+import {EventTypes, StoreEventListener} from './emitter.interface';
 
 /**
  * Emitter with setup to tests
@@ -13,7 +13,7 @@ class EmitterMock extends Emitter {
         event: EventTypes,
         objectKey: StoreEntryKey,
         ...args: any[]
-    ): void{
+    ): void {
         super.emit(event, objectKey, ...args);
     }
 }
@@ -29,14 +29,16 @@ describe('Emitter', () => {
         return EventTypes[type];
     });
 
-    beforeEach(() => {
+    const setup = () => {
         emitter = new EmitterMock();
         primitiveValues = generateTestValues('primitive');
         arrays = generateTestValues('array');
         objects = generateTestValues('object');
-    });
+    };
 
     describe('should allow to set listener', () => {
+        beforeAll(setup);
+
         const assertSetListener = (
             key?: StoreEntryKeySubstitute,
             eventType?: EventTypes
@@ -93,6 +95,8 @@ describe('Emitter', () => {
     });
 
     describe('should emit events to listeners', () => {
+        beforeEach(setup);
+
         // Local assertion callback
         const assertEmit = (
             emitsCount: number,
@@ -105,16 +109,15 @@ describe('Emitter', () => {
             const broadcastedEventType = eventType ? eventType : EventTypes.ALL;
             const broadcastedKey = key ? new StoreEntryKey(key) : Emitter.anyKeyOrNamespace;
             const broadcastedValue = values;
-            let emittedCount = 0;
+            const listener = jest.fn((receivedEventType, receivedKey, receivedValue) => {
+                expect(receivedEventType).toEqual(broadcastedEventType);
+                expect(receivedKey).toEqual(broadcastedKey);
+                expect(receivedValue).toEqual(broadcastedValue);
+            });
 
             emitter[listeningMethod](
                 eventType,
-                (receivedEventType, receivedKey, receivedValue) => {
-                    expect(receivedEventType).toEqual(broadcastedEventType);
-                    expect(receivedKey).toEqual(broadcastedKey);
-                    expect(receivedValue).toEqual(broadcastedValue);
-                    emittedCount++;
-                },
+                listener,
                 key
             );
 
@@ -126,7 +129,7 @@ describe('Emitter', () => {
                 );
             }
 
-            expect(emittedCount).toEqual(expectedCount);
+            expect(listener).toHaveBeenCalledTimes(expectedCount);
 
         };
 
@@ -149,6 +152,7 @@ describe('Emitter', () => {
 
         scenarios.forEach((scenario) => {
             describe(scenario.title, () => {
+
                 Object.keys(keys).forEach((keyLabel) => {
                     describe('for specific event', () => {
                         eventTypes.forEach((event) => {
@@ -264,7 +268,9 @@ describe('Emitter', () => {
 
     });
 
-    describe('should emit events to listeners', () => {
+    describe('should remove specific listeners', () => {
+        beforeAll(setup);
+
         // Local assertion callback
         const assertRemoval = (
             key?: StoreEntryKeySubstitute,
@@ -273,10 +279,7 @@ describe('Emitter', () => {
             const broadcastedEventType = eventType ? eventType : EventTypes.ALL;
             const broadcastedKey = key ? new StoreEntryKey(key) : Emitter.anyKeyOrNamespace;
             const broadcastedValue = 'test';
-            let emittedCount = 0;
-            const listener = () => {
-                emittedCount++;
-            };
+            const listener = jest.fn();
 
             emitter.on(eventType, listener, key);
 
@@ -290,62 +293,121 @@ describe('Emitter', () => {
                 );
             }
 
-            expect(emittedCount).toEqual(0);
+            expect(listener).not.toBeCalled();
 
         };
 
-        describe(scenario.title, () => {
-            Object.keys(keys).forEach((keyLabel) => {
-                describe('for specific event', () => {
-                    eventTypes.forEach((event) => {
-                        describe(`for event of type ${event}`, () => {
-                            describe(`with primitive value`, () => {
-                                it(`using ${keyLabel} as an identifier`, () => {
-                                    assertRemoval(
-                                        keys[keyLabel],
-                                        event
-                                    );
-                                });
+        Object.keys(keys).forEach((keyLabel) => {
+            describe('for specific event', () => {
+                eventTypes.forEach((event) => {
+                    describe(`for event of type ${event}`, () => {
+                        describe(`with primitive value`, () => {
+                            it(`using ${keyLabel} as an identifier`, () => {
+                                assertRemoval(
+                                    keys[keyLabel],
+                                    event
+                                );
                             });
-
                         });
+
                     });
                 });
-                describe('without providing event', () => {
-                    it(`using ${keyLabel} as an identifier`, () => {
-                        assertRemoval(
-                            keys[keyLabel],
-                            undefined
-                        );
-                    });
+            });
+            describe('without providing event', () => {
+                it(`using ${keyLabel} as an identifier`, () => {
+                    assertRemoval(
+                        keys[keyLabel],
+                        undefined
+                    );
                 });
             });
         });
 
     });
-    // describe('should remove specific listeners', () => {
-    // });
-    // describe('should remove all listeners', () => {
-    // });
-    // public on(
-    //         event: EventTypes,
-    //         listener: StoreEventListener,
-    //         keyOrNamespace: StoreEntryKeySubstitute = Emitter.anyKeyOrNamespace
-    // ): void {
-    //         public once(
-    //             event: EventTypes = EventTypes.ALL,
-    //         listener: StoreEventListener,
-    //         keyOrNamespace: StoreEntryKeySubstitute = Emitter.anyKeyOrNamespace
-    // ): void {
-    //         public removeListener(
-    //             event: EventTypes,
-    //         listener: StoreEventListener,
-    //         keyOrNamespace: StoreEntryKeySubstitute = Emitter.anyKeyOrNamespace
-    // ): void {
-    //         removeAllListeners()
-    //         protected emit(
-    //             event: EventTypes,
-    //         objectKey: StoreEntryKey,
-    // ...args: any[]
-    // ): void {
+
+    describe('should remove all listeners', () => {
+        beforeEach(setup);
+
+        const setupListener = (
+            providedListener: StoreEventListener,
+            key?: StoreEntryKeySubstitute,
+            eventType?: EventTypes
+        ) => {
+            const broadcastedEventType = eventType ? eventType : EventTypes.ALL;
+            const broadcastedKey = key ? new StoreEntryKey(key) : Emitter.anyKeyOrNamespace;
+
+            emitter.on(eventType, providedListener, key);
+        };
+
+        // Local assertion callback
+        const assertAllRemoval = (
+            key?: StoreEntryKeySubstitute,
+            eventType?: EventTypes
+        ) => {
+            const broadcastedEventType = eventType ? eventType : EventTypes.ALL;
+            const broadcastedKey = key ? new StoreEntryKey(key) : Emitter.anyKeyOrNamespace;
+            const broadcastedValue = 'test';
+
+            // Set common listener spy
+            const listener = jest.fn();
+
+            // fill emitter with listeners
+            Object.keys(keys).forEach((keyLabel) => {
+                eventTypes.forEach((event) => {
+                    setupListener(
+                        listener,
+                        keys[keyLabel],
+                        event
+                    );
+
+                });
+                setupListener(
+                    listener,
+                    keys[keyLabel],
+                    undefined
+                );
+            });
+
+            // assert removal
+            emitter.removeAllListeners();
+
+            for (let i = 0; i < 3; i++) {
+                emitter.emit(
+                    broadcastedEventType,
+                    broadcastedKey,
+                    broadcastedValue
+                );
+            }
+
+            expect(listener).not.toBeCalled();
+
+        };
+
+        Object.keys(keys).forEach((keyLabel) => {
+            describe('for specific event', () => {
+                eventTypes.forEach((event) => {
+                    describe(`for event of type ${event}`, () => {
+                        describe(`with primitive value`, () => {
+                            it(`using ${keyLabel} as an identifier`, () => {
+                                assertAllRemoval(
+                                    keys[keyLabel],
+                                    event
+                                );
+                            });
+                        });
+
+                    });
+                });
+            });
+            describe('without providing event', () => {
+                it(`using ${keyLabel} as an identifier`, () => {
+                    assertAllRemoval(
+                        keys[keyLabel],
+                        undefined
+                    );
+                });
+            });
+        });
+
+    });
 });
