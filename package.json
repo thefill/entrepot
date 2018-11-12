@@ -7,9 +7,9 @@
     "typings": "dist/esm/index.d.ts",
     "scripts": {
         "// DEV SCRIPTS //": "-------------------------------------------------------",
-        "start": "run-s watch:example",
+        "start": "run-s -s watch:example",
         "watch": "npm-watch build",
-        "build": "run-s clean build:esm build:cjs",
+        "build": "run-s -s clean build:esm build:cjs",
         "build:esm": "echo 'Building esm...' && tsc -p tsconfig.esm.json",
         "build:cjs": "echo 'Building cjs...' && tsc -p tsconfig.cjs.json",
         "watch:example": "parcel src/demo/index.html",
@@ -21,7 +21,7 @@
         "test:watch": "jest --config jest-unit.config.json --watch",
         "test:coverage": "jest --config jest-unit.config.json --coverage",
         "// UTILS SCRIPTS //": "-----------------------------------------------------",
-        "deploy:site": "gh-pages -d site -b master && run-s docs build:site ",
+        "deploy:site": "gh-pages -d site -b master && run-s -s docs build:site ",
         "docs": "typedoc --mode modules --exclude \"**/*+(index|.spec|.e2e).ts\" --tsconfig tsconfig.esm.json --hideGenerator --readme README.md --out docs src",
         "clean": "echo 'Cleaning...' && rimraf dist && rimraf docs && rimraf site && rimraf coverage"
     },
