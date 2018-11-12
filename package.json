@@ -23,9 +23,7 @@
         "// UTILS SCRIPTS //": "-----------------------------------------------------",
         "deploy:site": "gh-pages -d site -b master && run-s docs build:site ",
         "docs": "typedoc --mode modules --exclude \"**/*+(index|.spec|.e2e).ts\" --tsconfig tsconfig.esm.json --hideGenerator --readme README.md --out docs src",
-        "clean": "echo 'Cleaning...' && rimraf dist && rimraf docs && rimraf site && rimraf coverage",
-        "precommit": "run-s lint test e2e build clean",
-        "prepush": "run-s lint test e2e"
+        "clean": "echo 'Cleaning...' && rimraf dist && rimraf docs && rimraf site && rimraf coverage"
     },
     "watch": {
         "build": {
