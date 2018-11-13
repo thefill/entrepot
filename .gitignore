@@ -8,6 +8,10 @@
 
 # production
 /build
+/dist
+**/dist/
+/cache
+.cache
 
 # misc
 /.idea

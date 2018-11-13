@@ -1,1 +1,1 @@
-# Work in progress - very early stage (POC).
+# Work in progress - early stage (POC).
