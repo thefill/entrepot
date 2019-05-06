@@ -1,0 +1,87 @@
+version: 2
+jobs:
+    build:
+        docker:
+            - image: mhart/alpine-node:6.17.0
+
+        working_directory: ~/entrepot
+
+        steps:
+            - checkout
+
+            - run:
+                  name: Install dependencies
+                  command: npm install
+
+            - run:
+                  name: Lint code
+                  command: npm run lint
+
+            - run:
+                  name: Execute unit & E2E tests and check test coverage
+                  command: |
+                      npm run test &&
+                      npm run test:coverage &&
+                      npm run e2e
+
+            - run:
+                  name: Build
+                  command: |
+                      npm run test &&
+                      npm run test:coverage &&
+                      npm run e2e &&
+                      npm run build
+
+#            # Save artifacts
+#            - store_artifacts:
+#                  path: /tmp/artifacts
+#                  destination: build
+#
+#            # Upload test results
+#            - store_test_results:
+#                  path: /tmp/test-reports
+
+#    documentation:
+#       ...
+#    publish:
+#       ...
+#    deploy-stage:
+#        docker:
+#            - image: ubuntu:14.04
+#        working_directory: /tmp/entrepot
+#        steps:
+#            - run:
+#                  name: Deploy if tests pass and branch is Staging
+#                  command: ansible-playbook site.yml -i staging
+#
+#    deploy-prod:
+#        docker:
+#            - image: ubuntu:14.04
+#        working_directory: /tmp/entrepot
+#        steps:
+#            - run:
+#                  name: Deploy if tests pass and branch is Master
+#                  command: ansible-playbook site.yml -i production
+
+workflows:
+    version: 2
+    build-deploy:
+        jobs:
+            - build:
+                  filters:
+                      branches:
+                          ignore:
+                              - develop
+                              - /feature-.*/
+#            - deploy-stage:
+#                  requires:
+#                      - build
+#                  filters:
+#                      branches:
+#                          only: staging
+#            - deploy-prod:
+#                  requires:
+#                      - build
+#                  filters:
+#                      branches:
+#                          only: master

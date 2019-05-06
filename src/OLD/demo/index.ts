@@ -1,4 +1,4 @@
-import {Store, StoreEntryKeySubstitute} from "../modules";
+import {Store, StoreEntryKeySubstitute} from "../OLD";
 
 class DemoModule {
     // TODO: move demo to react
