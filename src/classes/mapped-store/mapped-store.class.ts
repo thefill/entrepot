@@ -3,11 +3,6 @@ import {Utils} from '../utils';
 
 export abstract class MappedStore<K = any, V = any> extends Map<K, V> implements IMappedStore<K, V> {
 
-    // todo: async? before and after each action?
-    protected abstract beforeAction(): void;
-    protected abstract onAction(): void;
-    protected abstract afterAction(): void;
-
     public set(key: K, value: V): this {
         super.set(key, Utils.decoupleValue(value));
         return this;

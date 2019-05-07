@@ -1,4 +1,4 @@
-import {generateTestValues} from './spec-utils';
+import {SpecUtils} from '../spec-utils';
 import {Utils} from './utils';
 
 describe('Utils', () => {
@@ -7,9 +7,9 @@ describe('Utils', () => {
     let objects: object[];
 
     beforeEach(() => {
-        primitiveValues = generateTestValues('primitive');
-        arrays = generateTestValues('array');
-        objects = generateTestValues('object');
+        primitiveValues = SpecUtils.generateTestValues('primitive');
+        arrays = SpecUtils.generateTestValues('array');
+        objects = SpecUtils.generateTestValues('object');
     });
 
     describe('should not change values of', () => {
@@ -65,7 +65,8 @@ describe('Utils', () => {
     it('should mix classes', () => {
         abstract class ClassA {
             public staticMethodA: string;
-            public methodA() {
+
+            public methodA(){
                 return 'valueA';
             }
         }
@@ -73,7 +74,8 @@ describe('Utils', () => {
         // tslint:disable-next-line
         abstract class ClassB {
             public staticMethodB: string;
-            public methodB() {
+
+            public methodB(){
                 return 'valueB';
             }
         }
@@ -90,6 +92,7 @@ describe('Utils', () => {
                 this.staticMethodB = 'staticValueB';
             }
         }
+
         Utils.mixin(ClassC, [ClassA, ClassB]);
 
         const newObjectC = new ClassC();
