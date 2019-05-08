@@ -1,4 +1,5 @@
-import {EventTypes, IEmitter, IEventStore, StoreEventListener} from './emitter.interface';
+import {EventTypes} from '../../enums';
+import {IEmitter, IEmitterConfig, IEventStore, StoreEventListener} from '../../interfaces';
 
 /**
  * Event emitting functionality for the store.
@@ -115,11 +116,18 @@ export abstract class Emitter implements IEmitter {
 
     // Default key used to group listeners
     public abstract defaultListenerKey: string;
+    public emitterEnabled = true;
 
     // Multiple usage event store
     protected events: IEventStore = {};
     // Single usage event store
     protected onceEvents: IEventStore = {};
+
+    constructor(config?: IEmitterConfig){
+        if (config && typeof config.emitterEnabled === 'boolean'){
+            this.emitterEnabled = config.emitterEnabled;
+        }
+    }
 
     /**
      * Register listener for specific event
@@ -132,7 +140,9 @@ export abstract class Emitter implements IEmitter {
         listener: StoreEventListener,
         listenerKey: string = this.defaultListenerKey
     ): void{
-        Emitter.addListenerToStore(this.events, event, listenerKey, listener);
+        if (this.emitterEnabled){
+            Emitter.addListenerToStore(this.events, event, listenerKey, listener);
+        }
     }
 
     /**
@@ -146,7 +156,9 @@ export abstract class Emitter implements IEmitter {
         listener: StoreEventListener,
         listenerKey: string = this.defaultListenerKey
     ): void{
-        Emitter.addListenerToStore(this.onceEvents, event, listenerKey, listener);
+        if (this.emitterEnabled){
+            Emitter.addListenerToStore(this.onceEvents, event, listenerKey, listener);
+        }
     }
 
     /**
@@ -183,10 +195,12 @@ export abstract class Emitter implements IEmitter {
         listenerKey: string = this.defaultListenerKey,
         ...args: any[]
     ): void{
-        Emitter.emitForStore(this.events, event, listenerKey, args);
-        Emitter.emitForStore(this.onceEvents, event, listenerKey, args);
+        if (this.emitterEnabled){
+            Emitter.emitForStore(this.events, event, listenerKey, args);
+            Emitter.emitForStore(this.onceEvents, event, listenerKey, args);
 
-        // remove listeners for event from single-usage store
-        Emitter.removeListenersFromStore(this.onceEvents, event, listenerKey);
+            // remove listeners for event from single-usage store
+            Emitter.removeListenersFromStore(this.onceEvents, event, listenerKey);
+        }
     }
 }

@@ -1,4 +1,3 @@
-import {StoreEntryKey, StoreEntryKeySubstitute} from '../../OLD/OLD/store-entry-key';
 
 /**
  * Generate set of values for provided types
@@ -6,30 +5,30 @@ import {StoreEntryKey, StoreEntryKeySubstitute} from '../../OLD/OLD/store-entry-
  */
 export class SpecUtils {
 
-    public static testKeys: { [keyLabel: string]: any } = {
-        'string': 'someKey',
-        'config object with key': {
-            key: 'someKey2'
-        },
-        'config object with key and namespace': {
-            namespace: 'someNamespace',
-            key: 'someKey3'
-        },
-        'config object with string key and existing namespace': {
-            namespace: 'someNamespace',
-            key: 'someKey4'
-        },
-        'key object with string default value': new StoreEntryKey('someKey5'),
-        'key object with key': new StoreEntryKey({key: 'someKey6'}),
-        'key object with key and namespace': new StoreEntryKey(({
-            namespace: 'someNamespace2',
-            key: 'someKey7'
-        })),
-        'key object with key and existing namespace': new StoreEntryKey(({
-            namespace: 'someNamespace2',
-            key: 'someKey8'
-        }))
-    };
+    // public static testKeys: { [keyLabel: string]: any } = {
+    //     'string': 'someKey',
+    //     'config object with key': {
+    //         key: 'someKey2'
+    //     },
+    //     'config object with key and namespace': {
+    //         namespace: 'someNamespace',
+    //         key: 'someKey3'
+    //     },
+    //     'config object with string key and existing namespace': {
+    //         namespace: 'someNamespace',
+    //         key: 'someKey4'
+    //     },
+    //     'key object with string default value': new StoreEntryKey('someKey5'),
+    //     'key object with key': new StoreEntryKey({key: 'someKey6'}),
+    //     'key object with key and namespace': new StoreEntryKey(({
+    //         namespace: 'someNamespace2',
+    //         key: 'someKey7'
+    //     })),
+    //     'key object with key and existing namespace': new StoreEntryKey(({
+    //         namespace: 'someNamespace2',
+    //         key: 'someKey8'
+    //     }))
+    // };
 
     public static generateTestValues(type: 'primitive' | 'array' | 'object'): any{
         let value: any;

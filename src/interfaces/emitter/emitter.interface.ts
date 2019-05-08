@@ -1,5 +1,8 @@
+import {EventTypes} from '../../enums';
+
 export interface IEmitter {
     defaultListenerKey: string;
+    emitterEnabled: boolean;
 
     on(
         event: EventTypes,
@@ -19,7 +22,14 @@ export interface IEmitter {
         listenerKey: string
     ): void;
 
-    removeAllListeners(): void
+    removeAllListeners(): void;
+}
+
+/**
+ * Emitter constructor config
+ */
+export interface IEmitterConfig {
+    emitterEnabled?: boolean;
 }
 
 /**
@@ -40,18 +50,4 @@ export interface IEventStoreEntry {
  */
 export interface IEventStore {
     [event: string]: IEventStoreEntry;
-}
-
-/**
- * Types of store events
- */
-export enum EventTypes {
-    ALL = 'all',
-    SET = 'set',
-    UPDATE = 'update',
-    DELETE = 'delete',
-    ALL_IN_NAMESPACE = 'allInNamespace',
-    SET_IN_NAMESPACE = 'setInNamespace',
-    DELETE_IN_NAMESPACE = 'deleteInNamespace',
-    UPDATE_IN_NAMESPACE = 'updateInNamespace'
 }

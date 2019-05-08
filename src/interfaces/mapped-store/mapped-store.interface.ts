@@ -1,4 +1,6 @@
-export interface IMappedStore<K, V> {
+import {ISyntheticMap} from '../synthetic-map/synthetic-map.interface';
+
+export interface IMappedStore<K, V> extends ISyntheticMap{
     // backup
     snapshot(): Array<[K, V]>;
 
