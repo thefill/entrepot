@@ -51,7 +51,7 @@
         "npm-watch": "^0.6.0",
         "parcel": "^1.10.3",
         "rimraf": "^2.6.2",
-        "ts-jest": "^24.0.2",
+        "ts-jest": "^25.5.0",
         "tslint": "^5.11.0",
         "typedoc": "^0.14.2",
         "typescript": "^3.1.6"
